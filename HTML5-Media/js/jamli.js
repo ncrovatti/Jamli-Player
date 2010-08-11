@@ -40,9 +40,11 @@
 		
 		self.media = $(selector)[0];
 		self.fullscreen = false;
+		self.cursorIsOverVolumeSet = false;
+		self.audioVolumeSetIsAnimated = false;
 		
 		self.createControl = function (k) {
-			$('#jamli-controls').append($('<span></span>').addClass(k + ' control').bind('click', function () {
+			$('#jamli-controls').append($('<span></span>').addClass('control ' + k).bind('click', function () {
 				try {
 					self['on' + k]($(this));
 				} 
@@ -56,43 +58,33 @@
 			return (self.media.volume < 0.5) ? 'audioVolumeLow' : 'audioVolumeHigh';
 		};
 		
-		self.registerControls = (function () {
-			$(selector).after('<div id="jamli-controls"></div>');
-			
-			$('#jamli-controls').css({
-				'width' : self.media.videoWidth + 'px'
-			});
-			
-			self.createControl('mediaPlaybackStart');
-			self.createControl('mediaPlaybackStop');
-			self.createControl(self.getVolumeClass());
-			self.createControl('viewFullscreen');
-			
-			$('.control').hover(function () {
-				$(this).css({'opacity' : 0.7});
-			}, function () {
-				$(this).css({'opacity' : 1});
-			});
-			
-			return true;
-		}());
-		
 
-		self.displayVolumeControl = function () {
-			
-		};
-		
-		
 		/* Control callbacks wrappers */
-		
 		self.onaudioVolumeLow = self.onaudioVolumeHigh = function (control) {
 			self.onaudioVolume(control);
 		};
 		
+		self.onaudioVolumeSet = function (control) {
+			self.media.volume = parseInt(control.attr('rel'), 10) / 10;
+			
+			self.media.muted = (self.media.volume === 0) ? true : false;
+
+			$('.audioVolumeSet').removeClass('audioVolumeSetLower').each(function () {
+				if (parseInt($(this).attr('rel'), 10) <= Math.round(self.media.volume * 10)) {
+					$(this).addClass('audioVolumeSetLower');
+				}
+			});
+			
+			var volumeClasses = 'control volumeController ' + ((self.media.muted === true) ? 'audioVolumeMuted' : self.getVolumeClass());
+			
+			$('.volumeController').attr('class', volumeClasses);
+		};
+		
+		
 		self.onaudioVolume = function (control) {
 			self.media.muted = !self.media.muted;
 
-			var volumeClasses = 'control ' + ((self.media.muted === true) ? 'audioVolumeMuted' : self.getVolumeClass());
+			var volumeClasses = 'control volumeController ' + ((self.media.muted === true) ? 'audioVolumeMuted' : self.getVolumeClass());
 			
 			control.attr('class', volumeClasses);
 		};
@@ -168,6 +160,68 @@
 			
 
 		};
+		
+		self.showVolumeSet = function() {
+			self.audioVolumeSetIsAnimated = true;
+			
+			if(self.cursorIsOverVolumeSet === false) {
+				$('#audioVolumeSet').hide("slow", function () {
+					self.audioVolumeSetIsAnimated = false;
+				});
+			}
+		};
+				
+		
+		self.registerControls = (function () {
+
+			$(selector).after('<div id="jamli-controls"></div>');
+
+			self.createControl('mediaPlaybackStart');
+			self.createControl('mediaPlaybackStop');
+			self.createControl(self.getVolumeClass());
+			self.createControl('viewFullscreen');
+			
+			for (var i=0; i <= 10; i++) {
+				self.createControl('audioVolumeSet');
+				$('.audioVolumeSet:last').attr('rel', i);
+			}
+			
+			$('.audioVolumeSet').wrapAll('<div id="audioVolumeSet" />');
+			
+			$('#audioVolumeSet').hover(function () { 
+				self.cursorIsOverVolumeSet = true;
+			}, function () {
+				self.cursorIsOverVolumeSet = false;
+				
+				setTimeout(self.showVolumeSet, 300);
+			});
+
+			$('.audioVolumeHigh, .audioVolumeLow').addClass('volumeController').hover(function () {
+				$('#audioVolumeSet').show("fast", function () {
+					self.audioVolumeSetIsAnimated = false;
+				});
+			}, function () {
+				
+				if (self.audioVolumeSetIsAnimated === true) {
+					return true;
+				}
+				
+				setTimeout(self.showVolumeSet, 300);
+
+			});
+			
+			
+			$('.control').hover(function () {
+				$(this).css({'opacity' : 1});
+			}, function () {
+				$(this).css({'opacity' : 0.7});
+			});
+			
+			$('.audioVolumeSet:nth-child(8n)').trigger('click');
+			
+			return true;
+		}());
+		
 		
 		return self;
 	};

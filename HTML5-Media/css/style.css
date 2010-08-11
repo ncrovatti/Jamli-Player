@@ -202,7 +202,7 @@ a:link { -webkit-tap-highlight-color: #FF5E99; }
 
 
 #myVideo {
-	border: 5px solid #666;
+	border: 5px solid #ccc;
 	border-radius: 5px;
 	-moz-border-radius: 5px;
 	-webkit-border-radius: 5px;
