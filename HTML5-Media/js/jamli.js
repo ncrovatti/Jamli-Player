@@ -55,7 +55,7 @@
 		};
 		
 		self.getVolumeClass = function () {
-			return (self.media.volume < 0.5) ? 'audioVolumeLow' : 'audioVolumeHigh';
+			return (self.media.volume <= 0.3) ? 'audioVolumeLow' : (self.media.volume <= 0.6) ? 'audioVolumeMid' : 'audioVolumeHigh';
 		};
 		
 		self.getVolumeClasses = function () {
@@ -63,7 +63,7 @@
 		};
 
 		/* Control callbacks wrappers */
-		self.onaudioVolumeLow = self.onaudioVolumeHigh = function (control) {
+		self.onaudioVolumeLow = self.onaudioVolumeMid = self.onaudioVolumeHigh = function (control) {
 			self.onaudioVolume(control);
 		};
 		
@@ -126,7 +126,7 @@
 		}; 
 		
 		self.onviewFullscreen = function (control) {
-			var pos = 'absolute';
+			var pos = 'fixed';
 			self.fullscreen = !self.fullscreen;
 
 			if (self.fullscreen === true) {
@@ -187,18 +187,17 @@
 				setTimeout(self.showVolumeSet, 300);
 			});
 
-			$('.audioVolumeHigh, .audioVolumeLow').addClass('volumeController').hover(function () {
+			$('.audioVolumeHigh, .audioVolumeMid, .audioVolumeLow').addClass('volumeController').hover(function () {
 				$('#audioVolumeSet').show("fast", function () {
 					self.audioVolumeSetIsAnimated = false;
 				});
 			}, 
 			function () {
-				
 				if (self.audioVolumeSetIsAnimated === true) {
 					return true;
-				}	
+				}
+				
 				setTimeout(self.showVolumeSet, 300);
-
 			});
 			
 			
