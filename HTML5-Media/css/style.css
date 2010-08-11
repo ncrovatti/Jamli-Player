@@ -200,3 +200,26 @@ a:link { -webkit-tap-highlight-color: #FF5E99; }
   html { -webkit-text-size-adjust:none; } /* Prevent iPhone from adjusting font size */
 }
 
+
+#myVideo {
+	border: 5px solid #666;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+}
+
+h1,h2,h3,h4,h6 {
+	font-family: "Droid Serif", Cambria, Georgia, Palatino,
+		"Palatino Linotype", "Myriad Pro", Serif;
+	font-weight: normal;
+}
+
+h1 {
+	color: #3073BA;
+	font-size: 4.3em;
+	font-weight: bold;
+	line-height: 1em;
+	margin: 0 0 20px;
+}
+
+

@@ -1,10 +1,35 @@
-/*jslint plusplus: false, white: true, browser: true, devel: true, forin: true, onevar: true, undef: true, nomen: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, strict: true */
-/*global window,jQuery */
-
-/* Usage: 
+/* 
+ * JaMLi - the lightweight Javascript Media Library v0.1
+ * https://code.google.com/p/html5-media/
+ * 
+ * 
+ * Copyright (c) 2010 Nicolas Crovatti
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * 
+ * Usage: 
  * 
  * window.Video1 = JaMLi('video tag selector');
  * */
+
+/*jslint plusplus: false, white: true, browser: true, devel: true, forin: true, onevar: true, undef: true, nomen: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, strict: true */
+/*global window, document, jQuery */
+
 
 "use strict";
 
@@ -14,10 +39,16 @@
 		var self = {};
 		
 		self.media = $(selector)[0];
+		self.fullscreen = false;
 		
 		self.createControl = function (k) {
 			$('#jamli-controls').append($('<span></span>').addClass(k + ' control').bind('click', function () {
-				self['on' + k]($(this));
+				try {
+					self['on' + k]($(this));
+				} 
+				catch(e) {
+					throw 'on' + k + ' is not a valid callback function';
+				}
 			}));
 		};
 		
@@ -29,13 +60,13 @@
 			$(selector).after('<div id="jamli-controls"></div>');
 			
 			$('#jamli-controls').css({
-				'width' : self.media.videoWidth + 'px',
-				'border': '1px solid black'
+				'width' : self.media.videoWidth + 'px'
 			});
 			
 			self.createControl('mediaPlaybackStart');
 			self.createControl('mediaPlaybackStop');
 			self.createControl(self.getVolumeClass());
+			self.createControl('viewFullscreen');
 			
 			$('.control').hover(function () {
 				$(this).css({'opacity' : 0.7});
@@ -46,10 +77,9 @@
 			return true;
 		}());
 		
-		
-		
+
 		self.displayVolumeControl = function () {
-				
+			
 		};
 		
 		
@@ -107,6 +137,37 @@
 			return true;
 		}; 
 		
+		self.onviewFullscreen = function (control) {
+			
+			self.fullscreen = !self.fullscreen;
+
+			if(self.fullscreen === true) {
+				self.oldDimension = {
+					h: self.media.videoHeight, 
+					w: self.media.videoWidth
+				};
+				
+				self.media.height = window.innerHeight;
+				self.media.width = window.innerWidth;
+				
+				$(selector).css({
+					'position':'absolute', 
+					'top': 0, 
+					'left': 0
+				});
+			} 
+			else {
+				$(selector).css({
+					'position':'relative', 
+					'top': 0, 
+					'left': 0
+				});	
+				self.media.height = self.oldDimension.h;
+				self.media.width =self.oldDimension.w;
+			}
+			
+
+		};
 		
 		return self;
 	};
@@ -115,6 +176,6 @@
 
 
 
-$(document).ready(function () {
-	window.videoElement = JaMLi('#myVideo');
+jQuery(document).ready(function () {
+	window.videoElement = window.JaMLi('#myVideo');
 });
