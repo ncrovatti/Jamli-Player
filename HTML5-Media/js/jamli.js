@@ -48,7 +48,7 @@
 				try {
 					self['on' + k]($(this));
 				} 
-				catch(e) {
+				catch (e) {
 					throw 'on' + k + ' is not a valid callback function';
 				}
 			}));
@@ -58,6 +58,9 @@
 			return (self.media.volume < 0.5) ? 'audioVolumeLow' : 'audioVolumeHigh';
 		};
 		
+		self.getVolumeClasses = function () {
+			return 'control volumeController ' + ((self.media.muted === true) ? 'audioVolumeMuted' : self.getVolumeClass());
+		};
 
 		/* Control callbacks wrappers */
 		self.onaudioVolumeLow = self.onaudioVolumeHigh = function (control) {
@@ -66,8 +69,6 @@
 		
 		self.onaudioVolumeSet = function (control) {
 			self.media.volume = parseInt(control.attr('rel'), 10) / 10;
-			
-			self.media.muted = (self.media.volume === 0) ? true : false;
 
 			$('.audioVolumeSet').removeClass('audioVolumeSetLower').each(function () {
 				if (parseInt($(this).attr('rel'), 10) <= Math.round(self.media.volume * 10)) {
@@ -75,18 +76,13 @@
 				}
 			});
 			
-			var volumeClasses = 'control volumeController ' + ((self.media.muted === true) ? 'audioVolumeMuted' : self.getVolumeClass());
-			
-			$('.volumeController').attr('class', volumeClasses);
+			$('.volumeController').attr('class', self.getVolumeClasses());
 		};
 		
 		
 		self.onaudioVolume = function (control) {
 			self.media.muted = !self.media.muted;
-
-			var volumeClasses = 'control volumeController ' + ((self.media.muted === true) ? 'audioVolumeMuted' : self.getVolumeClass());
-			
-			control.attr('class', volumeClasses);
+			control.attr('class', self.getVolumeClasses());
 		};
 		
 		self.onmediaPlaybackPause = function (control) {
@@ -130,10 +126,10 @@
 		}; 
 		
 		self.onviewFullscreen = function (control) {
-			
+			var pos = 'absolute';
 			self.fullscreen = !self.fullscreen;
 
-			if(self.fullscreen === true) {
+			if (self.fullscreen === true) {
 				self.oldDimension = {
 					h: self.media.videoHeight, 
 					w: self.media.videoWidth
@@ -141,30 +137,25 @@
 				
 				self.media.height = window.innerHeight;
 				self.media.width = window.innerWidth;
-				
-				$(selector).css({
-					'position':'absolute', 
-					'top': 0, 
-					'left': 0
-				});
 			} 
 			else {
-				$(selector).css({
-					'position':'relative', 
-					'top': 0, 
-					'left': 0
-				});	
+				pos = 'relative';
 				self.media.height = self.oldDimension.h;
-				self.media.width =self.oldDimension.w;
+				self.media.width = self.oldDimension.w;
 			}
-			
+
+			$(selector).css({
+				'position' : pos, 
+				'top' : 0, 
+				'left' : 0
+			});
 
 		};
 		
-		self.showVolumeSet = function() {
+		self.showVolumeSet = function () {
 			self.audioVolumeSetIsAnimated = true;
 			
-			if(self.cursorIsOverVolumeSet === false) {
+			if (self.cursorIsOverVolumeSet === false) {
 				$('#audioVolumeSet').hide("slow", function () {
 					self.audioVolumeSetIsAnimated = false;
 				});
@@ -181,18 +172,18 @@
 			self.createControl(self.getVolumeClass());
 			self.createControl('viewFullscreen');
 			
-			for (var i=0; i <= 10; i++) {
+			for (var i = 0; i <= 10; i++) {
 				self.createControl('audioVolumeSet');
 				$('.audioVolumeSet:last').attr('rel', i);
 			}
 			
-			$('.audioVolumeSet').wrapAll('<div id="audioVolumeSet" />');
+			$('.audioVolumeSet').wrapAll('<div id="audioVolumeSet"/>');
 			
 			$('#audioVolumeSet').hover(function () { 
 				self.cursorIsOverVolumeSet = true;
-			}, function () {
+			}, 
+			function () {
 				self.cursorIsOverVolumeSet = false;
-				
 				setTimeout(self.showVolumeSet, 300);
 			});
 
@@ -200,12 +191,12 @@
 				$('#audioVolumeSet').show("fast", function () {
 					self.audioVolumeSetIsAnimated = false;
 				});
-			}, function () {
+			}, 
+			function () {
 				
 				if (self.audioVolumeSetIsAnimated === true) {
 					return true;
-				}
-				
+				}	
 				setTimeout(self.showVolumeSet, 300);
 
 			});

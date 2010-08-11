@@ -211,7 +211,7 @@ a:link { -webkit-tap-highlight-color: #FF5E99; }
 h1,h2,h3,h4,h6 {
 	font-family: "Droid Serif", Cambria, Georgia, Palatino,
 		"Palatino Linotype", "Myriad Pro", Serif;
-	font-weight: normal;
+	font-style: italic;
 }
 
 h1 {
