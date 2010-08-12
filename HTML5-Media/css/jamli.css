@@ -108,6 +108,7 @@
 .mediaLengthTimer {
 	float: right !important;
 	width: auto !important;
+	line-height: 22px;
 }
 
 
