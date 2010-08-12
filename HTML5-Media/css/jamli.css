@@ -17,6 +17,10 @@
 	margin-left:4px;
 }
 
+#jamli-controls .control:hover {
+	opacity : 1;
+}
+
 #audioVolumeSet .control {
 	margin-left:0;
 }

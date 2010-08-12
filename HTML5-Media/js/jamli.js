@@ -34,14 +34,23 @@
 "use strict";
 
 (function (window, document, $) {
+	
+	function listen(e, el, f) {
+		if (el.addEventListener) {
+			el.addEventListener(e, f, false);
+		}
+		else if (el.attachEvent) {
+			el.attachEvent("on" + e, f);
+		}
+	}
 
 	window.JaMLi = window.JaMLi || function (selector) {
 		var self = {};
 		
 		self.media = $(selector)[0];
-		self.fullscreen = false;
+		self.isFullScreen = false;
 		self.isCursorOverVolumeSet = false;
-		self.audioVolumeSetIsAnimated = false;
+		self.isAudioVolumeSetAnimated = false;
 		
 		self.createControl = function (k) {
 			$('#jamli-controls').append($('<span></span>').addClass('control ' + k).bind('click', function () {
@@ -96,8 +105,7 @@
 				bind('click', function () {
 					self.onmediaPlaybackStart($(this));
 				});
-			
-			
+				
 			return true;
 		};
 		
@@ -129,9 +137,9 @@
 		
 		self.onviewFullscreen = function (control) {
 			var pos = 'fixed';
-			self.fullscreen = !self.fullscreen;
+			self.isFullScreen = !self.isFullScreen;
 
-			if (self.fullscreen === true) {
+			if (self.isFullScreen === true) {
 				self.oldDimension = {
 					h: self.media.videoHeight, 
 					w: self.media.videoWidth
@@ -155,11 +163,11 @@
 		};
 		
 		self.showVolumeSet = function () {
-			self.audioVolumeSetIsAnimated = true;
+			self.isAudioVolumeSetAnimated = true;
 			
 			if (self.isCursorOverVolumeSet === false) {
 				$('#audioVolumeSet').hide("slow", function () {
-					self.audioVolumeSetIsAnimated = false;
+					self.isAudioVolumeSetAnimated = false;
 				});
 			}
 		};
@@ -168,17 +176,13 @@
 		self.updateSeekBar = function () {
 			self.isUpdatingSeekBar = true;
 			$('.mediaCurrentPosition').css({'width' : self.media.currentTime / self.media.duration * 100 + '%'});
+			$('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
 			self.isUpdatingSeekBar = false; 
 			/*
 			$('.mediaCurrentPosition').animate({width: [self.media.currentTime/self.media.duration * 100 + '%', 'linear']}, 200, function () {
 				self.isUpdatingSeekBar = false;
 			});*/
 		};
-		
-		self.updateTimer = function () {
-			
-		};
-		
 		
 		self.getEventPosition = function (e) {
 			// http://www.quirksmode.org/js/events_properties.html
@@ -194,7 +198,7 @@
 		self.moveToPosition = function (e) {
 			var 
 				posx = self.getEventPosition(e) - $('.mediaSeekBarCenter')[0].offsetLeft,
-				percent = null;
+				percent;
 			
 			percent = self.media.duration * (posx / $('.mediaSeekBarCenter').width());
 
@@ -228,9 +232,7 @@
 		};
 		
 		self.getNiceTimeAndDuration = function () {
-			var 
-				time, niceElapsedTime, niceDurationTime, 
-				i = 0;
+			var niceElapsedTime, niceDurationTime;
 
 			niceElapsedTime = self.formatTime(self.media.currentTime);
 			niceDurationTime = self.formatTime(self.media.duration);
@@ -241,8 +243,7 @@
 		self.getTimeFromEvent = function (e, element) {
 			var 
 				posx = self.getEventPosition(e) - element[0].offsetLeft,
-				time, niceElapsedTime, niceDurationTime, 
-				i = 0;
+				time, niceElapsedTime;
 				
 			time = self.media.duration * (posx / element.width());
 			
@@ -250,7 +251,10 @@
 			return niceElapsedTime;
 		};
 		
-		
+		self.onmediaLengthTimer = function() {
+			return false;
+		};
+
 		self.registerControls = (function () {
 
 			$(selector).after('<div id="jamli-controls"></div>');
@@ -279,32 +283,22 @@
 
 			$('.audioVolumeHigh, .audioVolumeMid, .audioVolumeLow').addClass('volumeController').hover(function () {
 				$('#audioVolumeSet').show("fast", function () {
-					self.audioVolumeSetIsAnimated = false;
+					self.isAudioVolumeSetAnimated = false;
 				});
 			}, 
 			function () {
-				if (self.audioVolumeSetIsAnimated === true) {
+				if (self.isAudioVolumeSetAnimated === true) {
 					return true;
 				}
 				
 				setTimeout(self.showVolumeSet, 500);
 			});
 			
-			
-			$('.control').hover(function () {
-				$(this).css({'opacity' : 1});
-			}, 
-			function () {
-				$(this).css({'opacity' : 0.7});
-			});
-			
 			$('.audioVolumeSet:nth-child(8n)').trigger('click');
 			
 			$('#jamli-controls').before('<div class="mediaSeekBarCenter"><div class="mediaCurrentPosition"/><div class="mediaLengthPopupTimer"/></div>');
 			
-			
-			
-			self.media.addEventListener('timeupdate', function () {
+			listen('timeupdate', self.media, function () {
 				if (self.media.ended === true) {
 					$('.mediaPlaybackStop').trigger('click');
 				}
@@ -313,9 +307,9 @@
 					return false;
 				}
 				self.updateSeekBar();
-				$('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
-			}, false); 
-			
+				
+			}); 
+						
 			/*
 			setInterval(function () {
 				if (self.media.ended === true) {
@@ -328,7 +322,7 @@
 				self.updateSeekBar();
 			}, 10);
 			*/
-			
+
 			$('.mediaSeekBarCenter').unbind().bind('click', function (e) {
 				self.moveToPosition(e);
 			}).hover(function (e) {
@@ -340,9 +334,17 @@
 				$('.mediaLengthPopupTimer').text(self.getTimeFromEvent(e, $(this))).css({'left' : leftPos + 'px'});
 			});
 			
+			listen('loadedmetadata', self.media, function () {
+				if(self.media.videoHeight === 0) {
+					$(selector).attr('poster', 'medias/poster-audio.png');
+				}
+	
+				$('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
+			});
+		
 			return true;
 		}());
-		
+
 		
 		return self;
 	};
