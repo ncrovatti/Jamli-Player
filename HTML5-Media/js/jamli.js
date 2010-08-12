@@ -40,7 +40,7 @@
 		
 		self.media = $(selector)[0];
 		self.fullscreen = false;
-		self.cursorIsOverVolumeSet = false;
+		self.isCursorOverVolumeSet = false;
 		self.audioVolumeSetIsAnimated = false;
 		
 		self.createControl = function (k) {
@@ -89,7 +89,7 @@
 			
 			self.media.pause();
 			
-			control.removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart').
+			control.removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart').unbind().
 				bind('click', function () {
 					self.onmediaPlaybackStart($(this));
 				});
@@ -102,7 +102,7 @@
 			
 			self.media.play();
 			
-			control.removeClass('mediaPlaybackStart').addClass('mediaPlaybackPause').
+			control.removeClass('mediaPlaybackStart').addClass('mediaPlaybackPause').unbind().
 				bind('click', function () {
 					self.onmediaPlaybackPause($(this));
 				});
@@ -115,7 +115,7 @@
 			self.media.pause();
 			self.media.currentTime = 0;
 			
-			$('.mediaPlaybackPause').
+			$('.mediaPlaybackPause').unbind().
 				removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart').
 				bind('click', function () {
 					self.onmediaPlaybackStart($(this));
@@ -155,13 +155,24 @@
 		self.showVolumeSet = function () {
 			self.audioVolumeSetIsAnimated = true;
 			
-			if (self.cursorIsOverVolumeSet === false) {
+			if (self.isCursorOverVolumeSet === false) {
 				$('#audioVolumeSet').hide("slow", function () {
 					self.audioVolumeSetIsAnimated = false;
 				});
 			}
 		};
-				
+		
+
+		self.updateSeekBar = function () {
+			self.isUpdatingSeekBar = true;
+			/*
+			$('.mediaCurrentPosition').animate({width: [self.media.currentTime/self.media.duration * 100 + '%', 'linear']}, 200, function() {
+				self.isUpdatingSeekBar = false;
+			});*/
+
+			$('.mediaCurrentPosition').css({'width' : self.media.currentTime/self.media.duration * 100 + '%'});
+			self.isUpdatingSeekBar = false; 
+		};
 		
 		self.registerControls = (function () {
 
@@ -180,11 +191,11 @@
 			$('.audioVolumeSet').wrapAll('<div id="audioVolumeSet"/>');
 			
 			$('#audioVolumeSet').hover(function () { 
-				self.cursorIsOverVolumeSet = true;
+				self.isCursorOverVolumeSet = true;
 			}, 
 			function () {
-				self.cursorIsOverVolumeSet = false;
-				setTimeout(self.showVolumeSet, 300);
+				self.isCursorOverVolumeSet = false;
+				setTimeout(self.showVolumeSet, 500);
 			});
 
 			$('.audioVolumeHigh, .audioVolumeMid, .audioVolumeLow').addClass('volumeController').hover(function () {
@@ -197,7 +208,7 @@
 					return true;
 				}
 				
-				setTimeout(self.showVolumeSet, 300);
+				setTimeout(self.showVolumeSet, 500);
 			});
 			
 			
@@ -208,6 +219,16 @@
 			});
 			
 			$('.audioVolumeSet:nth-child(8n)').trigger('click');
+			
+			$('#jamli-controls').before('<div class="mediaSeekBarCenter"><div class="mediaCurrentPosition"/></div>');
+			
+			setInterval(function () {
+				if (self.isUpdatingSeekBar || self.media.paused === true) {
+					return false;
+				}
+				self.updateSeekBar();
+			}, 10);
+			
 			
 			return true;
 		}());

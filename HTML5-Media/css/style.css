@@ -200,12 +200,17 @@ a:link { -webkit-tap-highlight-color: #FF5E99; }
   html { -webkit-text-size-adjust:none; } /* Prevent iPhone from adjusting font size */
 }
 
+#container {
+	width: 730px; /*960px;*/
+	margin: 0 auto;
+}
 
 #myVideo {
 	border: 5px solid #ccc;
 	border-radius: 5px;
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px 5px 0 0;
+	-webkit-border-radius: 5px 5px 0 0;
+	margin-bottom: -3px;
 }
 
 h1,h2,h3,h4,h6 {
