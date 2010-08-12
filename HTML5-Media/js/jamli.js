@@ -62,7 +62,10 @@
 			return 'control volumeController ' + ((self.media.muted === true) ? 'audioVolumeMuted' : self.getVolumeClass());
 		};
 
-		/* Control callbacks wrappers */
+		/* 
+		 * Callbacks are determined by the css class. We must group 
+		 * functionalities for a multistate button : 
+		 * */
 		self.onaudioVolumeLow = self.onaudioVolumeMid = self.onaudioVolumeHigh = function (control) {
 			self.onaudioVolume(control);
 		};
@@ -101,7 +104,6 @@
 		self.onmediaPlaybackStart = function (control) {
 			
 			self.media.play();
-			
 			control.removeClass('mediaPlaybackStart').addClass('mediaPlaybackPause').unbind().
 				bind('click', function () {
 					self.onmediaPlaybackPause($(this));
@@ -165,14 +167,89 @@
 
 		self.updateSeekBar = function () {
 			self.isUpdatingSeekBar = true;
+			$('.mediaCurrentPosition').css({'width' : self.media.currentTime / self.media.duration * 100 + '%'});
+			self.isUpdatingSeekBar = false; 
 			/*
-			$('.mediaCurrentPosition').animate({width: [self.media.currentTime/self.media.duration * 100 + '%', 'linear']}, 200, function() {
+			$('.mediaCurrentPosition').animate({width: [self.media.currentTime/self.media.duration * 100 + '%', 'linear']}, 200, function () {
 				self.isUpdatingSeekBar = false;
 			});*/
-
-			$('.mediaCurrentPosition').css({'width' : self.media.currentTime/self.media.duration * 100 + '%'});
-			self.isUpdatingSeekBar = false; 
 		};
+		
+		self.updateTimer = function () {
+			
+		};
+		
+		
+		self.getEventPosition = function (e) {
+			// http://www.quirksmode.org/js/events_properties.html
+			if (e.pageX) {
+				return e.pageX;
+			}
+			else if (e.clientX) {
+				return e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+			}
+		};
+		
+		
+		self.moveToPosition = function (e) {
+			var 
+				posx = self.getEventPosition(e) - $('.mediaSeekBarCenter')[0].offsetLeft,
+				percent = null;
+			
+			percent = self.media.duration * (posx / $('.mediaSeekBarCenter').width());
+
+			self.media.currentTime = percent.toFixed(1);
+
+			// currentTime is updated only every 250ms.
+			self.updateSeekBarInterval = setInterval(function () {
+				if (self.media.currentTime.toFixed(1) === percent.toFixed(1)) {
+					self.updateSeekBar();
+					clearInterval(self.updateSeekBarInterval);
+				}
+			}, 20);
+		}; 
+		
+		self.addLeadingZeroes = function (e, i, a) {
+			if (e.toString().length < 2) {
+				a[i] = '0' + e;
+			}
+		};
+		
+		self.formatTime = function (seconds) {
+			seconds = Math.round(seconds);
+			var a = [
+				parseInt((seconds / 60) / 60, 10),
+				parseInt(seconds / 60, 10),
+				parseInt(seconds % 60, 10)
+			];
+			a.map(self.addLeadingZeroes);
+
+			return a.join(':');
+		};
+		
+		self.getNiceTimeAndDuration = function () {
+			var 
+				time, niceElapsedTime, niceDurationTime, 
+				i = 0;
+
+			niceElapsedTime = self.formatTime(self.media.currentTime);
+			niceDurationTime = self.formatTime(self.media.duration);
+			
+			return niceElapsedTime + '/' + niceDurationTime;
+		};
+		
+		self.getTimeFromEvent = function (e, element) {
+			var 
+				posx = self.getEventPosition(e) - element[0].offsetLeft,
+				time, niceElapsedTime, niceDurationTime, 
+				i = 0;
+				
+			time = self.media.duration * (posx / element.width());
+			
+			niceElapsedTime = self.formatTime(time);
+			return niceElapsedTime;
+		};
+		
 		
 		self.registerControls = (function () {
 
@@ -181,7 +258,9 @@
 			self.createControl('mediaPlaybackStart');
 			self.createControl('mediaPlaybackStop');
 			self.createControl(self.getVolumeClass());
+			
 			self.createControl('viewFullscreen');
+			self.createControl('mediaLengthTimer');
 			
 			for (var i = 0; i <= 10; i++) {
 				self.createControl('audioVolumeSet');
@@ -214,21 +293,52 @@
 			
 			$('.control').hover(function () {
 				$(this).css({'opacity' : 1});
-			}, function () {
+			}, 
+			function () {
 				$(this).css({'opacity' : 0.7});
 			});
 			
 			$('.audioVolumeSet:nth-child(8n)').trigger('click');
 			
-			$('#jamli-controls').before('<div class="mediaSeekBarCenter"><div class="mediaCurrentPosition"/></div>');
+			$('#jamli-controls').before('<div class="mediaSeekBarCenter"><div class="mediaCurrentPosition"/><div class="mediaLengthPopupTimer"/></div>');
 			
+			
+			
+			self.media.addEventListener('timeupdate', function () {
+				if (self.media.ended === true) {
+					$('.mediaPlaybackStop').trigger('click');
+				}
+				
+				if (self.isUpdatingSeekBar || self.media.paused === true) {
+					return false;
+				}
+				self.updateSeekBar();
+				$('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
+			}, false); 
+			
+			/*
 			setInterval(function () {
+				if (self.media.ended === true) {
+					$('.mediaPlaybackStop').trigger('click');
+				}
+				
 				if (self.isUpdatingSeekBar || self.media.paused === true) {
 					return false;
 				}
 				self.updateSeekBar();
 			}, 10);
+			*/
 			
+			$('.mediaSeekBarCenter').unbind().bind('click', function (e) {
+				self.moveToPosition(e);
+			}).hover(function (e) {
+				$('.mediaLengthPopupTimer').show();
+			}, function (e) {
+				$('.mediaLengthPopupTimer').hide();
+			}).bind('mousemove', function (e) {
+				var leftPos = self.getEventPosition(e) - $('.mediaSeekBarCenter')[0].offsetLeft;
+				$('.mediaLengthPopupTimer').text(self.getTimeFromEvent(e, $(this))).css({'left' : leftPos + 'px'});
+			});
 			
 			return true;
 		}());

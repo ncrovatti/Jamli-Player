@@ -14,6 +14,11 @@
 	height: 22px;
 	width: 22px;
 	opacity: 0.7;
+	margin-left:4px;
+}
+
+#audioVolumeSet .control {
+	margin-left:0;
 }
 
 #audioVolumeSet {
@@ -84,6 +89,23 @@
 		!important;
 }
 
+.mediaLengthPopupTimer {
+	-moz-border-radius:5px 5px 5px 5px;
+	-webkit-border-radius: 5px 5px 5px 5px;
+	background:none repeat scroll 0 0 #444444;
+	border:1px solid #EEEEEE;
+	color:#EEEEEE;
+	display:none;
+	padding:3px;
+	position:absolute;
+	top:-20px;
+	z-index:100;
+}
+.mediaLengthTimer {
+	float: right !important;
+	width: auto !important;
+}
+
 
 .mediaSeekBarCenter, .mediaCurrentPosition {
 	/*
@@ -106,6 +128,7 @@
 	border-left:1px solid #555753;
 	border-right:1px solid #555753;
 	height: 13px;
+	position : relative;
 }
 
 .mediaCurrentPosition {
