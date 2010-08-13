@@ -197,7 +197,7 @@
 		
 		self.moveToPosition = function (e) {
 			var 
-				posx = self.getEventPosition(e) - $('.mediaSeekBarCenter')[0].offsetLeft,
+				posx = self.getEventPosition(e) - $('.mediaSeekBarCenter')[0].offsetParent.offsetLeft,
 				percent;
 			
 			percent = self.media.duration * (posx / $('.mediaSeekBarCenter').width());
@@ -242,7 +242,7 @@
 		
 		self.getTimeFromEvent = function (e, element) {
 			var 
-				posx = self.getEventPosition(e) - element[0].offsetLeft,
+				posx = self.getEventPosition(e) - element[0].offsetParent.offsetLeft,
 				time, niceElapsedTime;
 				
 			time = self.media.duration * (posx / element.width());
@@ -256,8 +256,8 @@
 		};
 
 		self.registerControls = (function () {
-
-			$(selector).after('<div id="jamli-controls"></div>');
+			$(selector).wrap('<div id="videoWrapper">');
+			$(selector).after('<div id="jamli-controls"/>');
 
 			self.createControl('mediaPlaybackStart');
 			self.createControl('mediaPlaybackStop');
@@ -294,20 +294,21 @@
 				setTimeout(self.showVolumeSet, 500);
 			});
 			
-			$('.audioVolumeSet:nth-child(8n)').trigger('click');
+			$('.audioVolumeSet:nth-child(8)').trigger('click');
 			
-			$('#jamli-controls').before('<div class="mediaSeekBarCenter"><div class="mediaCurrentPosition"/><div class="mediaLengthPopupTimer"/></div>');
+			$('#jamli-controls').before('<div class="mediaSeekBarCenter"><div class="mediaCurrentPosition"/><div class="shaded mediaLengthPopupTimer"/></div>');
+			$('#jamli-controls, .mediaSeekBarCenter').wrapAll('<div id="jamli" class="shaded"/>');
 			
 			listen('timeupdate', self.media, function () {
 				if (self.media.ended === true) {
 					$('.mediaPlaybackStop').trigger('click');
+					return true;
 				}
 				
 				if (self.isUpdatingSeekBar || self.media.paused === true) {
 					return false;
 				}
 				self.updateSeekBar();
-				
 			}); 
 						
 			/*
@@ -322,7 +323,13 @@
 				self.updateSeekBar();
 			}, 10);
 			*/
+			$('#videoWrapper').hover(function () {
+				$('#jamli').show();
+			}, function () {
+					$('#jamli').hide('slow');
 
+			});
+			
 			$('.mediaSeekBarCenter').unbind().bind('click', function (e) {
 				self.moveToPosition(e);
 			}).hover(function (e) {
@@ -330,7 +337,7 @@
 			}, function (e) {
 				$('.mediaLengthPopupTimer').hide();
 			}).bind('mousemove', function (e) {
-				var leftPos = self.getEventPosition(e) - $('.mediaSeekBarCenter')[0].offsetLeft;
+				var leftPos = self.getEventPosition(e) - $('.mediaSeekBarCenter')[0].scrollWidth;
 				$('.mediaLengthPopupTimer').text(self.getTimeFromEvent(e, $(this))).css({'left' : leftPos + 'px'});
 			});
 			
