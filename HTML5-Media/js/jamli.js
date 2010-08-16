@@ -66,21 +66,21 @@
 			return -1;
 		};
 		
-		self.dom = (function () {
+		self.domApi = function () {
 			var dom = {};
-				
+			
 			dom.setNode = function(node) {
+				node = node[0] || node ;
 				dom.node = node || '';
-				
-				if(node[0]) {
-					dom.node = node[0];
-				}
-				console.log(dom);
 				dom.node.eventList = dom.node.eventList || [];
 				return dom;
 			};
 			
 			dom.listen = function (e, f) {
+				if (typeof f !== 'function') {
+					return false;
+				}
+				
 				
 				if (dom.node.addEventListener) {
 					dom.node.addEventListener(e, f, false);
@@ -167,54 +167,82 @@
 			
 			dom.getByClassName = function (className, context) {  
 				context = context || document;
-				
-				if (context.getElementsByClassName) {
-					return context.getElementsByClassName(className);
-				} 
-				else {
-					return (function getElementsByClass(searchClass, context) {
-						var
-							classElements = [],
-							els = context.getElementsByTagName("*"),
-							elsLen = els.length,
-							pattern = new RegExp("(^|\\s)" + searchClass + "(\\s|$)"), 
-							i = 0, j = 0;
-							
-						for (;i < elsLen; i++) {
-							if ( pattern.test(els[i].className) ) {
-								classElements[j] = els[i];
-								j++;
-							}
-						}
-						
-						return classElements;
-					})(className, context);
+
+				var
+					classElements = [],
+					els = context.all || context.getElementsByTagName("*"),
+					elsLen = els.length,
+					pattern = new RegExp("(^|\\s)" + className + "(\\s|$)"), 
+					i = 0, j = 0;
+					
+				for (;i < elsLen; i++) {
+					if (pattern.test(els[i].className) ) {
+						classElements[j] = els[i];
+						j++;
+					}
 				}
+				
+				if (classElements.length === 1) {
+					return classElements[0];
+				}
+				
+				return classElements;
+			};
+			
+			dom.attr = function (name, value) {
+				if (value === undefined) {
+					return dom.node.getAttribute(name);
+				}
+				
+				if (value === '') {
+					dom.node.removeAttribute(name);
+				}
+				
+				dom.node.setAttribute(name, value);
+				
+				return dom;
+			};
+			
+			dom.each = function (callback, nodes) {
+				var 
+					i = 0, 
+					l = 0,
+					oldNode = self.node;
+				
+				for (l = nodes.length; i < l; i++) {
+					//console.log('applying', callback, ' to ' , [nodes[i]]);
+					dom.setNode(nodes[i]);
+					callback.apply(dom, [nodes[i]]);
+				}
+				
+				dom.setNode(oldNode);
+				return dom;
 			};
 			
 			return dom;
-		}());
+		};
+		
+		self.dom = self.domApi();
 		
 		(function() {
-			$ = function (node) {
-				console.log(node, node.nodeType);
+			self.$ = $ = function (node) {
+				var dom = self.domApi();
 				if (node.nodeType !== 1) {
-					if(node.indexOf('.', 0) > -1) {
+					if(node.indexOf('.', 0) > -1) { // selector
 						var nodes = node.replace('.', ' ').split(' ');
 						nodes = nodes.map(self.trim).filter(self.nonEmpty);
-						return self.dom.setNode(self.dom.getByClassName(nodes.join(' ')));	
-					}	
+						return dom.setNode(dom.getByClassName(nodes.join(' ')));	
+					}
 				} 
 				else {
-					return self.dom.setNode(node);
+					return dom.setNode([node]);
 				}
 				
-				throw node + ' is not a valid selector function';
+				throw node.toString() + ' is not a valid selector function';
 			};
 		}());
 	
 		self.createControl = function (k) {
-			
 			var control = self.dom.append(self.dom.getById('jamli-controls'), self.dom.createNode('span'));
 			
 			$(control).addClass('control ' + k).listen('click', function () {
@@ -245,15 +273,17 @@
 		};
 		
 		self.onaudioVolumeSet = function (control) {
-			self.media.volume = parseInt(control.attr('rel'), 10) / 10;
-
-			J('.audioVolumeSet').removeClass('audioVolumeSetLower').each(function () {
-				if (parseInt(J(this).attr('rel'), 10) <= Math.round(self.media.volume * 10)) {
-					J(this).addClass('audioVolumeSetLower');
+			console.log($(control).attr('rel'));
+			self.media.volume = parseInt($(control).attr('rel'), 10) / 10;
+		
+			$('.audioVolumeSet').removeClass('audioVolumeSetLower').each(function () {
+				if (parseInt(this.attr('rel'), 10) <= Math.round(self.media.volume * 10)) {
+					this.addClass('audioVolumeSetLower');
 				}
-			});
+				
+			}, self.dom.getByClassName('audioVolumeSet'));
 			
-			J('.volumeController').attr('class', self.getVolumeClasses());
+			$('.volumeController').attr('class', self.getVolumeClasses());
 		};
 		
 		
@@ -283,12 +313,19 @@
 		};
 		
 		self.onmediaPlaybackStop = function (control) {
-
 			self.media.pause();
 			self.media.currentTime = 0;
-
-			$('.mediaPlaybackPause').removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart').unlisten('click').listen('click', function () {
-				self.onmediaPlaybackStart(self.dom.getByClassName('mediaPlaybackStart'));
+			
+			setTimeout(function () { 
+				self.updateSeekBar();
+			}, 250);
+			
+			if ($('.mediaPlaybackPause').node.length > 0) {
+				$('.mediaPlaybackPause').unlisten('click').removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart');
+			}
+			
+			$('.mediaPlaybackStart').listen('click', function () {
+				self.onmediaPlaybackStart(this);
 			});
 			
 			return true;
@@ -458,7 +495,7 @@
 			J('#jamli-controls').before('<div class="mediaSeekBarCenter"><div class="mediaCurrentPosition"/><div class="shaded mediaLengthPopupTimer"/></div>');
 			J('#jamli-controls, .mediaSeekBarCenter').wrapAll('<div id="jamli" class="shaded"/>');
 			
-			self.dom.listen('timeupdate', self.media, function () {
+			$(self.media).listen('timeupdate', function () {
 				if (self.media.ended === true) {
 					J('.mediaPlaybackStop').trigger('click');
 					return true;
@@ -485,7 +522,7 @@
 			J('#videoWrapper').hover(function () {
 				J('#jamli').show();
 			}, function () {
-					J('#jamli').hide('slow');
+				J('#jamli').hide('slow');
 
 			});
 			
