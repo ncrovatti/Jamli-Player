@@ -33,35 +33,200 @@
        
 "use strict";
 
-(function (window, document, $) {
-	
-	function listen(e, el, f) {
-		if (el.addEventListener) {
-			el.addEventListener(e, f, false);
-		}
-		else if (el.attachEvent) {
-			el.attachEvent("on" + e, f);
-		}
-	}
-
+(function (window, document, J) {
 	window.JaMLi = window.JaMLi || function (selector) {
-		var self = {};
+		var 
+			self = {}, 
+			$;
 		
-		self.media = $(selector)[0];
+		self.media = J(selector)[0];
 		self.isFullScreen = false;
 		self.isCursorOverVolumeSet = false;
 		self.isAudioVolumeSetAnimated = false;
+
+		self.trim = function (text) {
+			return (text || "").replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, "");
+		};
 		
+		self.nonEmpty =  function (e, i, a) {
+			return (e.length === 0) ? false : true;
+		};
+		
+		self.inArray = function(el, array) {
+			if (array.indexOf) {
+				return array.indexOf(el);
+			}
+	
+			for (var i = 0, length = array.length; i < length; i++) {
+				if (array[i] === el) {
+					return i;
+				}
+			}
+			
+			return -1;
+		};
+		
+		self.dom = (function () {
+			var dom = {};
+				
+			dom.setNode = function(node) {
+				dom.node = node || '';
+				
+				if(node[0]) {
+					dom.node = node[0];
+				}
+				console.log(dom);
+				dom.node.eventList = dom.node.eventList || [];
+				return dom;
+			};
+			
+			dom.listen = function (e, f) {
+				
+				if (dom.node.addEventListener) {
+					dom.node.addEventListener(e, f, false);
+				}
+				else if (dom.node.attachEvent) {
+					dom.node.attachEvent("on" + e, f);
+				}
+				
+				dom.node.eventList[e] = f;
+				
+				return dom;
+			};
+			
+			dom.unlisten = function (e) {
+				if(typeof dom.node.eventList !== "object") {
+					return false;	
+				}
+				
+				f = dom.node.eventList[e];
+				
+				if (dom.node.removeEventListener) {
+					dom.node.removeEventListener(e, f, false);
+				}
+				else if (dom.node.detachEvent) {
+					dom.node.detachEvent("on" + e, f);
+				}
+				
+				delete dom.node.eventList[e];
+				return dom;
+			};
+		
+			dom.getById = function (id) {
+				return document.getElementById(id);	
+			};
+			
+			dom.createNode = function (tagName) {
+				return document.createElement(tagName);
+			};
+			
+			dom.append = function (parent, node) {
+				return parent.appendChild(node);
+			};
+			
+			dom.removeClass = function (classesToRemove) {
+				var 
+					i = 0,
+					k = 0,
+					classestoKeep = [],
+					classesToRemove = classesToRemove.split(/\s+/),
+					nodeClasses = dom.node.className.split(/\s+/);
+					
+				classesToRemove.map(self.trim);
+				nodeClasses.map(self.trim);
+				
+				for (var iLength = nodeClasses.length; i < iLength; i++) {
+					if (self.inArray(nodeClasses[i], classesToRemove) === -1) {
+						classestoKeep.push(nodeClasses[i]);
+					}
+				}
+				
+				classestoKeep = classestoKeep.map(self.trim).filter(self.nonEmpty);
+				dom.node.className = classestoKeep.join(' ');
+				return dom;
+			};
+			
+			dom.addClass = function (classesToAdd) {
+				var
+					i = 0,
+					classesToAdd = classesToAdd.split(/\s+/),
+					nodeClasses = dom.node.className.split(/\s+/);
+					
+				classesToAdd.map(self.trim);
+				nodeClasses.map(self.trim);
+				
+				for (var iLength = nodeClasses.length; i < iLength; i++) {
+					if (self.inArray(nodeClasses[i], classesToAdd) > -1) {
+						classesToAdd.shift();
+					}
+				}
+
+				dom.node.className = nodeClasses.concat(classesToAdd).join(' ');
+				return dom;
+			};
+			
+			dom.getByClassName = function (className, context) {  
+				context = context || document;
+				
+				if (context.getElementsByClassName) {
+					return context.getElementsByClassName(className);
+				} 
+				else {
+					return (function getElementsByClass(searchClass, context) {
+						var
+							classElements = [],
+							els = context.getElementsByTagName("*"),
+							elsLen = els.length,
+							pattern = new RegExp("(^|\\s)" + searchClass + "(\\s|$)"), 
+							i = 0, j = 0;
+							
+						for (;i < elsLen; i++) {
+							if ( pattern.test(els[i].className) ) {
+								classElements[j] = els[i];
+								j++;
+							}
+						}
+						
+						return classElements;
+					})(className, context);
+				}
+			};
+			
+			return dom;
+		}());
+		
+		(function() {
+			$ = function (node) {
+				console.log(node, node.nodeType);
+				if (node.nodeType !== 1) {
+					if(node.indexOf('.', 0) > -1) {
+						var nodes = node.replace('.', ' ').split(' ');
+						nodes = nodes.map(self.trim).filter(self.nonEmpty);
+						return self.dom.setNode(self.dom.getByClassName(nodes.join(' ')));	
+					}	
+				} 
+				else {
+					return self.dom.setNode(node);
+				}
+				
+				throw node + ' is not a valid selector function';
+			};
+		}());
+	
 		self.createControl = function (k) {
-			$('#jamli-controls').append($('<span></span>').addClass('control ' + k).bind('click', function () {
+			
+			var control = self.dom.append(self.dom.getById('jamli-controls'), self.dom.createNode('span'));
+			
+			$(control).addClass('control ' + k).listen('click', function () {
 				try {
-					self['on' + k]($(this));
+					self['on' + k](control);
 				} 
 				catch (e) {
 					throw 'on' + k + ' is not a valid callback function';
 				}
-			}));
+			});
 		};
+		
 		
 		self.getVolumeClass = function () {
 			return (self.media.volume <= 0.3) ? 'audioVolumeLow' : (self.media.volume <= 0.6) ? 'audioVolumeMid' : 'audioVolumeHigh';
@@ -82,13 +247,13 @@
 		self.onaudioVolumeSet = function (control) {
 			self.media.volume = parseInt(control.attr('rel'), 10) / 10;
 
-			$('.audioVolumeSet').removeClass('audioVolumeSetLower').each(function () {
-				if (parseInt($(this).attr('rel'), 10) <= Math.round(self.media.volume * 10)) {
-					$(this).addClass('audioVolumeSetLower');
+			J('.audioVolumeSet').removeClass('audioVolumeSetLower').each(function () {
+				if (parseInt(J(this).attr('rel'), 10) <= Math.round(self.media.volume * 10)) {
+					J(this).addClass('audioVolumeSetLower');
 				}
 			});
 			
-			$('.volumeController').attr('class', self.getVolumeClasses());
+			J('.volumeController').attr('class', self.getVolumeClasses());
 		};
 		
 		
@@ -98,39 +263,33 @@
 		};
 		
 		self.onmediaPlaybackPause = function (control) {
-			
 			self.media.pause();
 			
-			control.removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart').unbind().
-				bind('click', function () {
-					self.onmediaPlaybackStart($(this));
-				});
-				
+			$(control).removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart').unlisten('click').listen('click', function () {
+				self.onmediaPlaybackStart(control);
+			});
+
 			return true;
 		};
 		
 		self.onmediaPlaybackStart = function (control) {
-			
 			self.media.play();
-			control.removeClass('mediaPlaybackStart').addClass('mediaPlaybackPause').unbind().
-				bind('click', function () {
-					self.onmediaPlaybackPause($(this));
-				});
-				
+			
+			$(control).removeClass('mediaPlaybackStart').addClass('mediaPlaybackPause').unlisten('click').listen('click', function () {
+				self.onmediaPlaybackPause(control);
+			});
 			
 			return true;
 		};
 		
 		self.onmediaPlaybackStop = function (control) {
+
 			self.media.pause();
 			self.media.currentTime = 0;
-			
-			$('.mediaPlaybackPause').unbind().
-				removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart').
-				bind('click', function () {
-					self.onmediaPlaybackStart($(this));
-				});
-			
+
+			$('.mediaPlaybackPause').removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart').unlisten('click').listen('click', function () {
+				self.onmediaPlaybackStart(self.dom.getByClassName('mediaPlaybackStart'));
+			});
 			
 			return true;
 		}; 
@@ -154,7 +313,7 @@
 				self.media.width = self.oldDimension.w;
 			}
 
-			$(selector).css({
+			J(selector).css({
 				'position' : pos, 
 				'top' : 0, 
 				'left' : 0
@@ -166,7 +325,7 @@
 			self.isAudioVolumeSetAnimated = true;
 			
 			if (self.isCursorOverVolumeSet === false) {
-				$('#audioVolumeSet').hide("slow", function () {
+				J('#audioVolumeSet').hide("slow", function () {
 					self.isAudioVolumeSetAnimated = false;
 				});
 			}
@@ -175,11 +334,11 @@
 
 		self.updateSeekBar = function () {
 			self.isUpdatingSeekBar = true;
-			$('.mediaCurrentPosition').css({'width' : self.media.currentTime / self.media.duration * 100 + '%'});
-			$('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
+			J('.mediaCurrentPosition').css({'width' : self.media.currentTime / self.media.duration * 100 + '%'});
+			J('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
 			self.isUpdatingSeekBar = false; 
 			/*
-			$('.mediaCurrentPosition').animate({width: [self.media.currentTime/self.media.duration * 100 + '%', 'linear']}, 200, function () {
+			J('.mediaCurrentPosition').animate({width: [self.media.currentTime/self.media.duration * 100 + '%', 'linear']}, 200, function () {
 				self.isUpdatingSeekBar = false;
 			});*/
 		};
@@ -197,10 +356,10 @@
 		
 		self.moveToPosition = function (e) {
 			var 
-				posx = self.getEventPosition(e) - $('.mediaSeekBarCenter')[0].offsetParent.offsetLeft,
+				posx = self.getEventPosition(e) - J('.mediaSeekBarCenter')[0].offsetParent.offsetLeft,
 				percent;
 			
-			percent = self.media.duration * (posx / $('.mediaSeekBarCenter').width());
+			percent = self.media.duration * (posx / J('.mediaSeekBarCenter').width());
 
 			self.media.currentTime = percent.toFixed(1);
 
@@ -256,8 +415,8 @@
 		};
 
 		self.registerControls = (function () {
-			$(selector).wrap('<div id="videoWrapper">');
-			$(selector).after('<div id="jamli-controls"/>');
+			J(selector).wrap('<div id="videoWrapper">');
+			J(selector).after('<div id="jamli-controls"/>');
 
 			self.createControl('mediaPlaybackStart');
 			self.createControl('mediaPlaybackStop');
@@ -268,12 +427,12 @@
 			
 			for (var i = 0; i <= 10; i++) {
 				self.createControl('audioVolumeSet');
-				$('.audioVolumeSet:last').attr('rel', i);
+				J('.audioVolumeSet:last').attr('rel', i);
 			}
 			
-			$('.audioVolumeSet').wrapAll('<div id="audioVolumeSet"/>');
+			J('.audioVolumeSet').wrapAll('<div id="audioVolumeSet"/>');
 			
-			$('#audioVolumeSet').hover(function () { 
+			J('#audioVolumeSet').hover(function () { 
 				self.isCursorOverVolumeSet = true;
 			}, 
 			function () {
@@ -281,8 +440,8 @@
 				setTimeout(self.showVolumeSet, 500);
 			});
 
-			$('.audioVolumeHigh, .audioVolumeMid, .audioVolumeLow').addClass('volumeController').hover(function () {
-				$('#audioVolumeSet').show("fast", function () {
+			J('.audioVolumeHigh, .audioVolumeMid, .audioVolumeLow').addClass('volumeController').hover(function () {
+				J('#audioVolumeSet').show("fast", function () {
 					self.isAudioVolumeSetAnimated = false;
 				});
 			}, 
@@ -294,14 +453,14 @@
 				setTimeout(self.showVolumeSet, 500);
 			});
 			
-			$('.audioVolumeSet:nth-child(8)').trigger('click');
+			J('.audioVolumeSet:nth-child(8)').trigger('click');
 			
-			$('#jamli-controls').before('<div class="mediaSeekBarCenter"><div class="mediaCurrentPosition"/><div class="shaded mediaLengthPopupTimer"/></div>');
-			$('#jamli-controls, .mediaSeekBarCenter').wrapAll('<div id="jamli" class="shaded"/>');
+			J('#jamli-controls').before('<div class="mediaSeekBarCenter"><div class="mediaCurrentPosition"/><div class="shaded mediaLengthPopupTimer"/></div>');
+			J('#jamli-controls, .mediaSeekBarCenter').wrapAll('<div id="jamli" class="shaded"/>');
 			
-			listen('timeupdate', self.media, function () {
+			self.dom.listen('timeupdate', self.media, function () {
 				if (self.media.ended === true) {
-					$('.mediaPlaybackStop').trigger('click');
+					J('.mediaPlaybackStop').trigger('click');
 					return true;
 				}
 				
@@ -314,7 +473,7 @@
 			/*
 			setInterval(function () {
 				if (self.media.ended === true) {
-					$('.mediaPlaybackStop').trigger('click');
+					J('.mediaPlaybackStop').trigger('click');
 				}
 				
 				if (self.isUpdatingSeekBar || self.media.paused === true) {
@@ -323,30 +482,30 @@
 				self.updateSeekBar();
 			}, 10);
 			*/
-			$('#videoWrapper').hover(function () {
-				$('#jamli').show();
+			J('#videoWrapper').hover(function () {
+				J('#jamli').show();
 			}, function () {
-					$('#jamli').hide('slow');
+					J('#jamli').hide('slow');
 
 			});
 			
-			$('.mediaSeekBarCenter').unbind().bind('click', function (e) {
+			J('.mediaSeekBarCenter').unbind().bind('click', function (e) {
 				self.moveToPosition(e);
 			}).hover(function (e) {
-				$('.mediaLengthPopupTimer').show();
+				J('.mediaLengthPopupTimer').show();
 			}, function (e) {
-				$('.mediaLengthPopupTimer').hide();
+				J('.mediaLengthPopupTimer').hide();
 			}).bind('mousemove', function (e) {
-				var leftPos = self.getEventPosition(e) - $('.mediaSeekBarCenter')[0].scrollWidth;
-				$('.mediaLengthPopupTimer').text(self.getTimeFromEvent(e, $(this))).css({'left' : leftPos + 'px'});
+				var leftPos = self.getEventPosition(e) - J('.mediaSeekBarCenter')[0].scrollWidth;
+				J('.mediaLengthPopupTimer').text(self.getTimeFromEvent(e, J(this))).css({'left' : leftPos + 'px'});
 			});
 			
-			listen('loadedmetadata', self.media, function () {
+			$(self.media).listen('loadedmetadata', function () {
 				if(self.media.videoHeight === 0) {
-					$(selector).attr('poster', 'medias/poster-audio.png');
+					J(selector).attr('poster', 'medias/poster-audio.png');
 				}
 	
-				$('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
+				J('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
 			});
 		
 			return true;
