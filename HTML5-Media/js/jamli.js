@@ -66,6 +66,7 @@
 			return -1;
 		};
 		
+		// miniQuery
 		self.domApi = function () {
 			var 
 				dom = {},
