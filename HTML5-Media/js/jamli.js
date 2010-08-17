@@ -67,11 +67,19 @@
 		};
 		
 		self.domApi = function () {
-			var dom = {};
+			var dom = {},			
+			speeds = {
+				slow: 600,
+		 		fast: 200,
+		 		_default: 400
+			};
 			
 			dom.setNode = function(node) {
-				node = node[0] || node ;
-				dom.node = node || '';
+				//if (node.length > 1) {
+					dom.nodes = node;	
+				//}
+				
+				dom.node = node[0] || node  || '';
 				dom.node.eventList = dom.node.eventList || [];
 				return dom;
 			};
@@ -113,7 +121,7 @@
 			};
 		
 			dom.getById = function (id) {
-				return document.getElementById(id);	
+				return [document.getElementById(id)];	
 			};
 			
 			dom.createNode = function (tagName) {
@@ -121,6 +129,7 @@
 			};
 			
 			dom.append = function (parent, node) {
+				parent = parent[0] || node;
 				return parent.appendChild(node);
 			};
 			
@@ -160,8 +169,10 @@
 						classesToAdd.shift();
 					}
 				}
-
-				dom.node.className = nodeClasses.concat(classesToAdd).join(' ');
+				
+				nodeClasses = nodeClasses.concat(classesToAdd).filter(self.nonEmpty);
+				
+				dom.node.className = nodeClasses.join(' ');
 				return dom;
 			};
 			
@@ -203,21 +214,106 @@
 				return dom;
 			};
 			
-			dom.each = function (callback, nodes) {
+			dom.each = function (callback) {
 				var 
-					i = 0, 
-					l = 0,
-					oldNode = self.node;
-				
+					i = 0, l = 0,
+					nodes = dom.nodes;
+
 				for (l = nodes.length; i < l; i++) {
-					//console.log('applying', callback, ' to ' , [nodes[i]]);
+					//console.log('apply', callback, ' on ', nodes[i] );
 					dom.setNode(nodes[i]);
 					callback.apply(dom, [nodes[i]]);
 				}
 				
-				dom.setNode(oldNode);
+				// restoring previous node.
+				dom.setNode(nodes);
 				return dom;
 			};
+			
+			/* Helper */
+			dom.style = function (property, value) {
+				if (value === undefined) {
+					return dom.node.style[property];
+				}
+				
+				dom.node.style[property] = value;
+				return dom;	
+			};
+			
+			dom.css = function (rules) {
+				dom.each(function () {
+					for (property in rules) {
+						this.style(property, rules[property]);
+					}
+				});
+				
+				return dom;
+			};
+			
+			
+			dom.hide = function (speed, callback) {
+				var 
+					duration = (typeof speed === "number")  ? speed : speeds[speed] || speeds._default,
+					stepping = 50;
+					/*
+					100 = 600
+					600 / 20 = 30
+					
+					100 / 30 = 3.33%;
+					
+					1 - 1 * 0.033
+					*/
+				
+				console.time('profile 1');
+				dom.each(function () {
+					var 
+						growth = 100 / (duration / stepping),
+						step = 0;
+					
+					(function (dom){
+						//console.log(dom,dom.style, arguments);
+						var currentOpacity = 1;
+						
+						if (!isNaN(parseFloat(dom.style('opacity')))) {
+							currentOpacity = parseFloat(dom.style('opacity')) - (growth * step);
+						}
+						
+						console.log(parseFloat(dom.style('opacity')), dom.style('opacity'));
+						
+						currentOpacity = (currentOpacity < 0) ? 0 : ((currentOpacity > 1) ? 1 : currentOpacity);
+						
+						if (step * stepping >= duration || currentOpacity === 0) {
+							console.timeEnd('profile 1');
+							return false;
+						}
+						
+						step++;
+						
+										
+						//console.log('currentOpacity', currentOpacity, 'step', step, 'growth' , growth, 'growth * step / 100)', growth * step / 100);
+		
+				//		currentOpacity = currentOpacity - (growth * step / 100);
+	
+					//	currentOpacity = currentOpacity.toFixed(2);
+						//console.log('currentOpacity', currentOpacity);
+					
+						
+						
+						//console.log('currentOpacity (Fixed)', currentOpacity);
+						
+						dom.css({
+							'filter' : 'alpha(opacity=' + currentOpacity * 100 + ')',
+							'opacity' : currentOpacity,
+							'-moz-opacity' : currentOpacity
+						});
+
+						setTimeout(arguments.callee, stepping, arguments[0]);
+					}(dom));
+				});
+				
+				return dom;
+			};
+			
 			
 			return dom;
 		};
@@ -225,20 +321,36 @@
 		self.dom = self.domApi();
 		
 		(function() {
-			self.$ = $ = function (node) {
-				var dom = self.domApi();
+			window._ = self.$ = $ = function (node) {
+				var 
+					dom = self.domApi(), 
+					settings = {}, 
+					nodes = [];
+					
 				if (node.nodeType !== 1) {
-					if(node.indexOf('.', 0) > -1) { // selector
-						var nodes = node.replace('.', ' ').split(' ');
+					if(node.indexOf('.', 0) > -1) {
+						settings.method = 'getByClassName';
+						settings.prefix = '.';
+					} 
+					else if (node.indexOf('#', 0) > -1) {
+						settings.method = 'getById';
+						settings.prefix = '#';
+					}
+					else {
+						delete settings;	
+					}
+
+					if (settings !== undefined){
+						nodes = node.replace(settings.prefix, ' ').split(' ');
 						nodes = nodes.map(self.trim).filter(self.nonEmpty);
-						return dom.setNode(dom.getByClassName(nodes.join(' ')));	
+						return dom.setNode(dom[settings.method](nodes.join(' ')));
 					}
 				} 
 				else {
 					return dom.setNode([node]);
 				}
 				
-				throw node.toString() + ' is not a valid selector function';
+				throw node.toString() + ' is not a valid selector';
 			};
 		}());
 	
@@ -273,15 +385,16 @@
 		};
 		
 		self.onaudioVolumeSet = function (control) {
-			console.log($(control).attr('rel'));
 			self.media.volume = parseInt($(control).attr('rel'), 10) / 10;
 		
-			$('.audioVolumeSet').removeClass('audioVolumeSetLower').each(function () {
+			$('.audioVolumeSet').each(function () {
+				this.removeClass('audioVolumeSetLower');
+				
 				if (parseInt(this.attr('rel'), 10) <= Math.round(self.media.volume * 10)) {
 					this.addClass('audioVolumeSetLower');
 				}
 				
-			}, self.dom.getByClassName('audioVolumeSet'));
+			});
 			
 			$('.volumeController').attr('class', self.getVolumeClasses());
 		};
@@ -350,7 +463,7 @@
 				self.media.width = self.oldDimension.w;
 			}
 
-			J(selector).css({
+			$(self.media).css({
 				'position' : pos, 
 				'top' : 0, 
 				'left' : 0
@@ -362,7 +475,7 @@
 			self.isAudioVolumeSetAnimated = true;
 			
 			if (self.isCursorOverVolumeSet === false) {
-				J('#audioVolumeSet').hide("slow", function () {
+				$('#audioVolumeSet').hide("slow", function () {
 					self.isAudioVolumeSetAnimated = false;
 				});
 			}
