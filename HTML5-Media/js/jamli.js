@@ -28,7 +28,7 @@
  * */
 
 /*jslint plusplus: false, white: true, browser: true, devel: true, forin: true, onevar: true, undef: true, nomen: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, strict: true */
-/*global window, document, jQuery */
+/*global window, document, jQuery, J */
 
        
 "use strict";
@@ -52,7 +52,7 @@
 			return (e.length === 0) ? false : true;
 		};
 		
-		self.inArray = function(el, array) {
+		self.inArray = function (el, array) {
 			if (array.indexOf) {
 				return array.indexOf(el);
 			}
@@ -68,19 +68,15 @@
 		
 		self.domApi = function () {
 			var 
-			dom = {},		
-			speeds = {
-				slow: 600,
-		 		fast: 200,
-		 		_default: 400
-			};
+				dom = {},
+				speeds = {
+					slow : 600,
+					fast : 200,
+					_default : 400
+				};
 
-			dom.setNode = function(node) {
-				console.log('Current scope : ', dom.scope);
-				//if (node.length > 1) {
-					dom.nodes = node;	
-				//}
-				
+			dom.setNode = function (node) {
+				dom.nodes = node;
 				dom.node = node[0] || node  || '';
 				dom.node.eventList = dom.node.eventList || [];
 				return dom;
@@ -105,11 +101,11 @@
 			};
 			
 			dom.unlisten = function (e) {
-				if(typeof dom.node.eventList !== "object") {
+				if (typeof dom.node.eventList !== "object") {
 					return false;	
 				}
 				
-				f = dom.node.eventList[e];
+				var f = dom.node.eventList[e];
 				
 				if (dom.node.removeEventListener) {
 					dom.node.removeEventListener(e, f, false);
@@ -137,16 +133,14 @@
 			
 			dom.removeClass = function (classesToRemove) {
 				var 
-					i = 0,
-					k = 0,
+					i = 0, l = 0,
 					classestoKeep = [],
-					classesToRemove = classesToRemove.split(/\s+/),
 					nodeClasses = dom.node.className.split(/\s+/);
 					
-				classesToRemove.map(self.trim);
+				classesToRemove = classesToRemove.split(/\s+/).map(self.trim);
 				nodeClasses.map(self.trim);
 				
-				for (var iLength = nodeClasses.length; i < iLength; i++) {
+				for (l = nodeClasses.length; i < l; i++) {
 					if (self.inArray(nodeClasses[i], classesToRemove) === -1) {
 						classestoKeep.push(nodeClasses[i]);
 					}
@@ -159,14 +153,13 @@
 			
 			dom.addClass = function (classesToAdd) {
 				var
-					i = 0,
-					classesToAdd = classesToAdd.split(/\s+/),
+					i = 0, l = 0,
 					nodeClasses = dom.node.className.split(/\s+/);
 					
-				classesToAdd.map(self.trim);
+				classesToAdd.split(/\s+/).map(self.trim);
 				nodeClasses.map(self.trim);
 				
-				for (var iLength = nodeClasses.length; i < iLength; i++) {
+				for (l = nodeClasses.length; i < l; i++) {
 					if (self.inArray(nodeClasses[i], classesToAdd) > -1) {
 						classesToAdd.shift();
 					}
@@ -189,7 +182,7 @@
 					i = 0, j = 0;
 					
 				for (;i < elsLen; i++) {
-					if (pattern.test(els[i].className) ) {
+					if (pattern.test(els[i].className)) {
 						classElements[j] = els[i];
 						j++;
 					}
@@ -244,7 +237,7 @@
 			
 			dom.css = function (rules) {
 				dom.each(function () {
-					for (property in rules) {
+					for (var property in rules) {
 						this.style(property, rules[property]);
 					}
 				});
@@ -270,7 +263,7 @@
 					}
 
 
-					(function (){
+					(function () {
 						var currentOpacity = 1 - (growth * step);
 
 						step++;
@@ -320,7 +313,7 @@
 					
 					this.style('display', 'block');
 					
-					(function (){
+					(function () {
 						var currentOpacity = 0 + (growth * step);
 						
 						step++;
@@ -356,7 +349,7 @@
 		
 		self.dom = self.domApi();
 		
-		(function() {
+		(function () {
 			window._ = self.$ = $ = function (node) {
 				var 
 					dom = self.domApi(), 
@@ -366,7 +359,7 @@
 				dom.scope = arguments.callee.caller;
 				
 				if (node.nodeType !== 1) {
-					if(node.indexOf('.', 0) > -1) {
+					if (node.indexOf('.', 0) > -1) {
 						settings.method = 'getByClassName';
 						settings.prefix = '.';
 					} 
@@ -378,7 +371,7 @@
 						delete settings;	
 					}
 
-					if (settings !== undefined){
+					if (settings !== undefined) {
 						nodes = node.replace(settings.prefix, ' ').split(' ');
 						nodes = nodes.map(self.trim).filter(self.nonEmpty);
 						return dom.setNode(dom[settings.method](nodes.join(' ')));
@@ -599,7 +592,7 @@
 			return niceElapsedTime;
 		};
 		
-		self.onmediaLengthTimer = function() {
+		self.onmediaLengthTimer = function () {
 			return false;
 		};
 
@@ -691,7 +684,7 @@
 			});
 			
 			$(self.media).listen('loadedmetadata', function () {
-				if(self.media.videoHeight === 0) {
+				if (self.media.videoHeight === 0) {
 					J(selector).attr('poster', 'medias/poster-audio.png');
 				}
 	
