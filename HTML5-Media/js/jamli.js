@@ -67,14 +67,16 @@
 		};
 		
 		self.domApi = function () {
-			var dom = {},			
+			var 
+			dom = {},		
 			speeds = {
 				slow: 600,
 		 		fast: 200,
 		 		_default: 400
 			};
-			
+
 			dom.setNode = function(node) {
+				console.log('Current scope : ', dom.scope);
 				//if (node.length > 1) {
 					dom.nodes = node;	
 				//}
@@ -249,71 +251,105 @@
 				
 				return dom;
 			};
-			
-			
+
 			dom.hide = function (speed, callback) {
 				var 
 					duration = (typeof speed === "number")  ? speed : speeds[speed] || speeds._default,
-					stepping = 50;
-					/*
-					100 = 600
-					600 / 20 = 30
-					
-					100 / 30 = 3.33%;
-					
-					1 - 1 * 0.033
-					*/
+					stepping = 20;
 				
-				console.time('profile 1');
 				dom.each(function () {
 					var 
-						growth = 100 / (duration / stepping),
+						growth = 100 / (duration / stepping) / 100,
 						step = 0;
-					
-					(function (dom){
-						//console.log(dom,dom.style, arguments);
-						var currentOpacity = 1;
 						
-						if (!isNaN(parseFloat(dom.style('opacity')))) {
-							currentOpacity = parseFloat(dom.style('opacity')) - (growth * step);
-						}
-						
-						console.log(parseFloat(dom.style('opacity')), dom.style('opacity'));
-						
-						currentOpacity = (currentOpacity < 0) ? 0 : ((currentOpacity > 1) ? 1 : currentOpacity);
-						
-						if (step * stepping >= duration || currentOpacity === 0) {
-							console.timeEnd('profile 1');
-							return false;
-						}
-						
+					if (isNaN(parseFloat(this.style('opacity')))) {
+						this.style('opacity', 1);
+					}
+					else if (parseFloat(this.style('opacity')) === 0) {
+						return false;
+					}
+
+
+					(function (){
+						var currentOpacity = 1 - (growth * step);
+
 						step++;
 						
+						currentOpacity = (currentOpacity < 0) ? 0 : ((currentOpacity > 1) ? 1 : currentOpacity);
 										
-						//console.log('currentOpacity', currentOpacity, 'step', step, 'growth' , growth, 'growth * step / 100)', growth * step / 100);
-		
-				//		currentOpacity = currentOpacity - (growth * step / 100);
-	
-					//	currentOpacity = currentOpacity.toFixed(2);
-						//console.log('currentOpacity', currentOpacity);
-					
-						
-						
-						//console.log('currentOpacity (Fixed)', currentOpacity);
-						
 						dom.css({
 							'filter' : 'alpha(opacity=' + currentOpacity * 100 + ')',
 							'opacity' : currentOpacity,
 							'-moz-opacity' : currentOpacity
 						});
+						
+						if (step * stepping >= duration || currentOpacity === 0) {
+							dom.css({
+								'filter' : 'alpha(opacity=100)',
+								'opacity' : 1,
+								'-moz-opacity' : 1,
+								'display': 'none'
+							});
+							callback.apply(dom.scope, []);
+							return false;
+						}
 
 						setTimeout(arguments.callee, stepping, arguments[0]);
-					}(dom));
+					}());
 				});
-				
 				return dom;
 			};
 			
+			dom.show = function (speed, callback) {
+				var 
+					duration = (typeof speed === "number")  ? speed : speeds[speed] || speeds._default,
+					stepping = 20;
+
+				dom.each(function () {
+					var 
+						growth = 100 / (duration / stepping) / 100,
+						step = 0;
+						
+					if (isNaN(parseFloat(this.style('opacity')))) {
+						this.style('opacity', 0);
+					}
+					else if (parseFloat(this.style('opacity')) === 1) {
+						this.style('display', 'block');
+						return false;
+					}
+					
+					this.style('display', 'block');
+					
+					(function (){
+						var currentOpacity = 0 + (growth * step);
+						
+						step++;
+						
+						currentOpacity = (currentOpacity < 0) ? 0 : ((currentOpacity > 1) ? 1 : currentOpacity);
+										
+						dom.css({
+							'filter' : 'alpha(opacity=' + currentOpacity * 100 + ')',
+							'opacity' : currentOpacity,
+							'-moz-opacity' : currentOpacity
+						});
+						
+						if (step * stepping >= duration || currentOpacity === 1) {
+							dom.css({
+								'filter' : 'alpha(opacity=100)',
+								'opacity' : 1,
+								'-moz-opacity' : 1,
+								'display': 'block'
+							});
+
+							callback.apply(dom.scope, []);
+							return false;
+						}
+
+						setTimeout(arguments.callee, stepping, arguments[0]);
+					}());
+				});
+				return dom;
+			};
 			
 			return dom;
 		};
@@ -326,7 +362,9 @@
 					dom = self.domApi(), 
 					settings = {}, 
 					nodes = [];
-					
+				
+				dom.scope = arguments.callee.caller;
+				
 				if (node.nodeType !== 1) {
 					if(node.indexOf('.', 0) > -1) {
 						settings.method = 'getByClassName';
@@ -476,6 +514,7 @@
 			
 			if (self.isCursorOverVolumeSet === false) {
 				$('#audioVolumeSet').hide("slow", function () {
+					console.log('audioVolumeSet hide callback called. Here is the scope : ', this);
 					self.isAudioVolumeSetAnimated = false;
 				});
 			}
@@ -591,7 +630,8 @@
 			});
 
 			J('.audioVolumeHigh, .audioVolumeMid, .audioVolumeLow').addClass('volumeController').hover(function () {
-				J('#audioVolumeSet').show("fast", function () {
+				$('#audioVolumeSet').show("slow", function () {
+					console.log('audioVolumeSet slow callback called. Here is the scope : ', this);
 					self.isAudioVolumeSetAnimated = false;
 				});
 			}, 
