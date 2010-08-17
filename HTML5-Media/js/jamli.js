@@ -78,7 +78,7 @@
 
 			dom.setNode = function (node) {
 				dom.nodes = node;
-				dom.node = node[0] || node  || '';
+				dom.node = node[0];
 				dom.node.eventList = dom.node.eventList || [];
 				return dom;
 			};
@@ -128,7 +128,7 @@
 			};
 			
 			dom.append = function (parent, node) {
-				parent = parent[0] || node;
+				parent = parent[0] || parent;
 				return parent.appendChild(node);
 			};
 			
@@ -157,7 +157,7 @@
 					i = 0, l = 0,
 					nodeClasses = dom.node.className.split(/\s+/);
 					
-				classesToAdd.split(/\s+/).map(self.trim);
+				classesToAdd = classesToAdd.split(/\s+/).map(self.trim);
 				nodeClasses.map(self.trim);
 				
 				for (l = nodeClasses.length; i < l; i++) {
@@ -189,10 +189,6 @@
 					}
 				}
 				
-				if (classElements.length === 1) {
-					return classElements[0];
-				}
-				
 				return classElements;
 			};
 			
@@ -216,7 +212,6 @@
 					nodes = dom.nodes;
 
 				for (l = nodes.length; i < l; i++) {
-					//console.log('apply', callback, ' on ', nodes[i] );
 					dom.setNode(nodes[i]);
 					callback.apply(dom, [nodes[i]]);
 				}
@@ -253,7 +248,7 @@
 				
 				dom.each(function () {
 					var 
-						growth = 100 / (duration / stepping) / 100,
+						growth = 1 / (duration / stepping),
 						step = 0;
 						
 					if (isNaN(parseFloat(this.style('opacity')))) {
@@ -301,7 +296,7 @@
 
 				dom.each(function () {
 					var 
-						growth = 100 / (duration / stepping) / 100,
+						growth = 1 / (duration / stepping),
 						step = 0;
 						
 					if (isNaN(parseFloat(this.style('opacity')))) {
