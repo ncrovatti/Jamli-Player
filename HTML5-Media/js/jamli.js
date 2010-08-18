@@ -259,13 +259,13 @@
 					}
 
 
-					(function ease() {
+					(function animate() {
 						var currentOpacity = 1 - (growth * step);
 
 						step++;
 						
 						currentOpacity = (currentOpacity < 0) ? 0 : ((currentOpacity > 1) ? 1 : currentOpacity);
-										
+
 						dom.css({
 							'filter' : 'alpha(opacity=' + currentOpacity * 100 + ')',
 							'opacity' : currentOpacity,
@@ -283,7 +283,7 @@
 							return false;
 						}
 
-						setTimeout(ease, stepping, arguments[0]);
+						setTimeout(animate, stepping, arguments[0]);
 					}());
 				});
 				return dom;
@@ -309,13 +309,13 @@
 					
 					this.style('display', 'block');
 					
-					(function ease() {
+					(function animate() {
 						var currentOpacity = 0 + (growth * step);
 						
 						step++;
 						
 						currentOpacity = (currentOpacity < 0) ? 0 : ((currentOpacity > 1) ? 1 : currentOpacity);
-										
+						
 						dom.css({
 							'filter' : 'alpha(opacity=' + currentOpacity * 100 + ')',
 							'opacity' : currentOpacity,
@@ -334,7 +334,7 @@
 							return false;
 						}
 
-						setTimeout(ease, stepping, arguments[0]);
+						setTimeout(animate, stepping, arguments[0]);
 					}());
 				});
 				return dom;
@@ -344,7 +344,7 @@
 		};
 		
 		self.dom = self.domApi();
-		
+
 		(function () {
 			self.$ = $ = function $(node) {
 				var 
