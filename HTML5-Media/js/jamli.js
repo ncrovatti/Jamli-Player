@@ -78,12 +78,12 @@
 
 			dom.setNode = function (node) {
 				dom.nodes = node;
-				dom.node = node[0];
+				dom.node = node[0] || node;
 				dom.node.eventList = dom.node.eventList || [];
 				return dom;
 			};
 			
-			dom.listen = function (e, f) {
+			dom.bind = function (e, f) {
 				if (typeof f !== 'function') {
 					return false;
 				}
@@ -101,7 +101,7 @@
 				return dom;
 			};
 			
-			dom.unlisten = function (e) {
+			dom.unbind = function (e) {
 				if (typeof dom.node.eventList !== "object") {
 					return false;	
 				}
@@ -259,7 +259,7 @@
 					}
 
 
-					(function () {
+					(function ease() {
 						var currentOpacity = 1 - (growth * step);
 
 						step++;
@@ -283,7 +283,7 @@
 							return false;
 						}
 
-						setTimeout(arguments.callee, stepping, arguments[0]);
+						setTimeout(ease, stepping, arguments[0]);
 					}());
 				});
 				return dom;
@@ -309,7 +309,7 @@
 					
 					this.style('display', 'block');
 					
-					(function () {
+					(function ease() {
 						var currentOpacity = 0 + (growth * step);
 						
 						step++;
@@ -334,7 +334,7 @@
 							return false;
 						}
 
-						setTimeout(arguments.callee, stepping, arguments[0]);
+						setTimeout(ease, stepping, arguments[0]);
 					}());
 				});
 				return dom;
@@ -346,13 +346,13 @@
 		self.dom = self.domApi();
 		
 		(function () {
-			window._ = self.$ = $ = function (node) {
+			self.$ = $ = function $(node) {
 				var 
 					dom = self.domApi(), 
 					settings = {}, 
 					nodes = [];
-				
-				dom.scope = arguments.callee.caller;
+
+				dom.scope = $.caller;
 				
 				if (node.nodeType !== 1) {
 					if (node.indexOf('.', 0) > -1) {
@@ -384,7 +384,7 @@
 		self.createControl = function (k) {
 			var control = self.dom.append(self.dom.getById('jamli-controls'), self.dom.createNode('span'));
 			
-			$(control).addClass('control ' + k).listen('click', function () {
+			$(control).addClass('control ' + k).bind('click', function () {
 				try {
 					self['on' + k](control);
 				} 
@@ -435,7 +435,7 @@
 		self.onmediaPlaybackPause = function (control) {
 			self.media.pause();
 			
-			$(control).removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart').unlisten('click').listen('click', function () {
+			$(control).removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart').unbind('click').bind('click', function () {
 				self.onmediaPlaybackStart(control);
 			});
 
@@ -445,7 +445,7 @@
 		self.onmediaPlaybackStart = function (control) {
 			self.media.play();
 			
-			$(control).removeClass('mediaPlaybackStart').addClass('mediaPlaybackPause').unlisten('click').listen('click', function () {
+			$(control).removeClass('mediaPlaybackStart').addClass('mediaPlaybackPause').unbind('click').bind('click', function () {
 				self.onmediaPlaybackPause(control);
 			});
 			
@@ -461,10 +461,10 @@
 			}, 250);
 			
 			if ($('.mediaPlaybackPause').node.length > 0) {
-				$('.mediaPlaybackPause').unlisten('click').removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart');
+				$('.mediaPlaybackPause').unbind('click').removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart');
 			}
 			
-			$('.mediaPlaybackStart').listen('click', function () {
+			$('.mediaPlaybackStart').bind('click', function () {
 				self.onmediaPlaybackStart(this);
 			});
 			
@@ -503,7 +503,6 @@
 			
 			if (self.isCursorOverVolumeSet === false) {
 				$('#audioVolumeSet').hide("slow", function () {
-					console.log('audioVolumeSet hide callback called. Here is the scope : ', this);
 					self.isAudioVolumeSetAnimated = false;
 				});
 			}
@@ -558,11 +557,13 @@
 		
 		self.formatTime = function (seconds) {
 			seconds = Math.round(seconds);
+			
 			var a = [
 				parseInt((seconds / 60) / 60, 10),
 				parseInt(seconds / 60, 10),
 				parseInt(seconds % 60, 10)
 			];
+			
 			a.map(self.addLeadingZeroes);
 
 			return a.join(':');
@@ -620,7 +621,6 @@
 
 			J('.audioVolumeHigh, .audioVolumeMid, .audioVolumeLow').addClass('volumeController').hover(function () {
 				$('#audioVolumeSet').show("slow", function () {
-					console.log('audioVolumeSet slow callback called. Here is the scope : ', this);
 					self.isAudioVolumeSetAnimated = false;
 				});
 			}, 
@@ -637,7 +637,7 @@
 			J('#jamli-controls').before('<div class="mediaSeekBarCenter"><div class="mediaCurrentPosition"/><div class="shaded mediaLengthPopupTimer"/></div>');
 			J('#jamli-controls, .mediaSeekBarCenter').wrapAll('<div id="jamli" class="shaded"/>');
 			
-			$(self.media).listen('timeupdate', function () {
+			$(self.media).bind('timeupdate', function () {
 				if (self.media.ended === true) {
 					J('.mediaPlaybackStop').trigger('click');
 					return true;
@@ -679,7 +679,7 @@
 				J('.mediaLengthPopupTimer').text(self.getTimeFromEvent(e, J(this))).css({'left' : leftPos + 'px'});
 			});
 			
-			$(self.media).listen('loadedmetadata', function () {
+			$(self.media).bind('loadedmetadata', function () {
 				if (self.media.videoHeight === 0) {
 					J(selector).attr('poster', 'medias/poster-audio.png');
 				}
