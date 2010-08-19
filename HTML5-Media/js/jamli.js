@@ -34,6 +34,330 @@
 "use strict";
 
 (function (window, document, J) {
+	// miniQuery
+	window.selfDOM = window.selfDOM|| function () {
+		var 
+			dom = {},
+			speeds = {
+				slow : 600,
+				fast : 200,
+				_default : 400
+			};
+			
+			
+		dom.trim = function (text) {
+			return (text || "").replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, "");
+		};
+		
+		dom.nonEmpty =  function (e, i, a) {
+			return (e.length === 0) ? false : true;
+		};
+		
+		dom.inArray = function (el, array) {
+			if (array.indexOf) {
+				return array.indexOf(el);
+			}
+	
+			for (var i = 0, length = array.length; i < length; i++) {
+				if (array[i] === el) {
+					return i;
+				}
+			}
+			
+			return -1;
+		};
+	
+		dom.setNode = function (node) {
+			dom.nodes = node;
+			dom.node = node[0] || node;
+			dom.node.eventList = dom.node.eventList || [];
+			return dom;
+		};
+		
+		dom.bind = function (e, f) {
+			if (typeof f !== 'function') {
+				return false;
+			}
+			
+			dom.each(function () {
+				if (this.node.addEventListener) {
+					this.node.addEventListener(e, f, false);
+				}
+				else if (this.node.attachEvent) {
+					this.node.attachEvent("on" + e, f);
+				}
+				
+				this.node.eventList[e] = f;
+			});
+			
+			return dom;
+		};
+		
+		dom.unbind = function (e) {
+			dom.each(function () {
+				if (typeof this.node.eventList !== "object" || typeof  this.node.eventList[e] !== "object") {
+					return false;
+				}
+				
+				var f = this.node.eventList[e];
+				
+				if (this.node.removeEventListener) {
+					this.node.removeEventListener(e, f, false);
+				}
+				else if (this.node.detachEvent) {
+					this.node.detachEvent("on" + e, f);
+				}
+				
+				delete this.node.eventList[e];
+			});
+			
+			return dom;
+		};
+	
+		dom.getById = function (id) {
+			return [document.getElementById(id)];	
+		};
+		
+		dom.createNode = function (tagName) {
+			return document.createElement(tagName);
+		};
+		
+		dom.append = function (parent, node) {
+			parent = parent[0] || parent;
+			return parent.appendChild(node);
+		};
+		
+		dom.removeClass = function (classesToRemove) {
+			classesToRemove = classesToRemove.split(/\s+/).map(this.trim);
+			
+			dom.each(function () {
+				var 
+					i = 0, l = 0,
+					classestoKeep = [],
+					nodeClasses = this.node.className.split(/\s+/);
+					
+
+				
+				nodeClasses.map(this.trim);
+				
+				for (l = nodeClasses.length; i < l; i++) {
+					if (this.inArray(nodeClasses[i], classesToRemove) === -1) {
+						classestoKeep.push(nodeClasses[i]);
+					}
+				}
+				
+				classestoKeep = classestoKeep.map(this.trim).filter(this.nonEmpty);
+				this.node.className = classestoKeep.join(' ');
+				return true;
+			});
+
+			return dom;
+		};
+		
+		dom.addClass = function (classesToAdd) {
+			classesToAdd = classesToAdd.split(/\s+/).map(this.trim);
+			
+			dom.each(function () {
+				var
+					i = 0, l = 0,
+					nodeClasses = this.node.className.split(/\s+/);
+										
+				
+
+				nodeClasses.map(this.trim);
+				
+				for (l = nodeClasses.length; i < l; i++) {
+					if (this.inArray(nodeClasses[i], classesToAdd) > -1) {
+						classesToAdd.shift();
+					}
+				}
+				
+				nodeClasses = nodeClasses.concat(classesToAdd).filter(this.nonEmpty);
+
+				this.node.className = nodeClasses.join(' ');
+				
+			});
+
+			return dom;
+		};
+		
+		dom.getByClassName = function (className, context) {  
+			context = context || document;
+
+			var
+				classElements = [],
+				els = context.all || context.getElementsByTagName("*"),
+				elsLen = els.length,
+				pattern = new RegExp("(^|\\s)" + className + "(\\s|$)"), 
+				i = 0, j = 0;
+				
+			for (;i < elsLen; i++) {
+				if (pattern.test(els[i].className)) {
+					classElements[j] = els[i];
+					j++;
+				}
+			}
+			
+			return classElements;
+		};
+		
+		/* attr() targets a single dom node except when setting a value */
+		dom.attr = function (name, value) {
+			if (value === undefined) {
+				return dom.node.getAttribute(name);
+			}
+			
+			if (value === '') {
+				dom.node.removeAttribute(name);
+			}
+			
+			dom.each(function () {
+				dom.node.setAttribute(name, value);
+			});
+			
+			return dom;
+		};
+		
+		dom.each = function (callback) {
+			var 
+				i = 0, l = 0,
+				nodes = dom.nodes;
+
+			for (l = nodes.length; i < l; i++) {
+				dom.setNode(nodes[i]);
+				callback.apply(dom, [nodes[i]]);
+			}
+			
+			// restoring previous node.
+			dom.setNode(nodes);
+			return dom;
+		};
+		
+		/* Helper */
+		/* style() targets a single dom node. */
+		dom.style = function (property, value) {
+			if (value === undefined) {
+				return dom.node.style[property];
+			}
+			
+			dom.node.style[property] = value;
+			return dom;	
+		};
+		
+		dom.css = function (rules) {
+			dom.each(function () {
+				for (var property in rules) {
+					this.style(property, rules[property]);
+				}
+			});
+			
+			return dom;
+		};
+
+		dom.hide = function (speed, callback) {
+			var 
+				duration = (typeof speed === "number")  ? speed : speeds[speed] || speeds._default,
+				stepping = 20;
+			
+			dom.each(function () {
+				var 
+					growth = 1 / (duration / stepping),
+					step = 0;
+					
+				if (isNaN(parseFloat(this.style('opacity')))) {
+					this.style('opacity', 1);
+				}
+				else if (parseFloat(this.style('opacity')) === 0) {
+					return false;
+				}
+
+
+				(function animate() {
+					var currentOpacity = 1 - (growth * step);
+
+					step++;
+					
+					currentOpacity = (currentOpacity < 0) ? 0 : ((currentOpacity > 1) ? 1 : currentOpacity);
+
+					dom.css({
+						'filter' : 'alpha(opacity=' + currentOpacity * 100 + ')',
+						'opacity' : currentOpacity,
+						'-moz-opacity' : currentOpacity
+					});
+					
+					if (step * stepping >= duration || currentOpacity === 0) {
+						dom.css({
+							'filter' : 'alpha(opacity=100)',
+							'opacity' : 1,
+							'-moz-opacity' : 1,
+							'display': 'none'
+						});
+						callback.apply(dom.scope, []);
+						return false;
+					}
+
+					setTimeout(animate, stepping, arguments[0]);
+				}());
+			});
+			return dom;
+		};
+		
+		dom.show = function (speed, callback) {
+			var 
+				duration = (typeof speed === "number")  ? speed : speeds[speed] || speeds._default,
+				stepping = 20;
+
+			dom.each(function () {
+				var 
+					growth = 1 / (duration / stepping),
+					step = 0;
+					
+				if (isNaN(parseFloat(this.style('opacity')))) {
+					this.style('opacity', 0);
+				}
+				else if (parseFloat(this.style('opacity')) === 1) {
+					this.style('display', 'block');
+					return false;
+				}
+				
+				this.style('display', 'block');
+				
+				(function animate() {
+					var currentOpacity = 0 + (growth * step);
+					
+					step++;
+					
+					currentOpacity = (currentOpacity < 0) ? 0 : ((currentOpacity > 1) ? 1 : currentOpacity);
+					
+					dom.css({
+						'filter' : 'alpha(opacity=' + currentOpacity * 100 + ')',
+						'opacity' : currentOpacity,
+						'-moz-opacity' : currentOpacity
+					});
+					
+					if (step * stepping >= duration || currentOpacity === 1) {
+						dom.css({
+							'filter' : 'alpha(opacity=100)',
+							'opacity' : 1,
+							'-moz-opacity' : 1,
+							'display': 'block'
+						});
+
+						callback.apply(dom.scope, []);
+						return false;
+					}
+
+					setTimeout(animate, stepping, arguments[0]);
+				}());
+			});
+			return dom;
+		};
+		
+		return dom;
+	};
+	
+
+
 	window.JaMLi = window.JaMLi || function (selector) {
 		var 
 			self = {}, 
@@ -43,335 +367,12 @@
 		self.isFullScreen = false;
 		self.isCursorOverVolumeSet = false;
 		self.isAudioVolumeSetAnimated = false;
-		
-		// miniQuery
-		self.domApi = function () {
-			var 
-				dom = {},
-				speeds = {
-					slow : 600,
-					fast : 200,
-					_default : 400
-				};
-				
-				
-			dom.trim = function (text) {
-				return (text || "").replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, "");
-			};
-			
-			dom.nonEmpty =  function (e, i, a) {
-				return (e.length === 0) ? false : true;
-			};
-			
-			dom.inArray = function (el, array) {
-				if (array.indexOf) {
-					return array.indexOf(el);
-				}
-		
-				for (var i = 0, length = array.length; i < length; i++) {
-					if (array[i] === el) {
-						return i;
-					}
-				}
-				
-				return -1;
-			};
-		
-			dom.setNode = function (node) {
-				dom.nodes = node;
-				dom.node = node[0] || node;
-				dom.node.eventList = dom.node.eventList || [];
-				return dom;
-			};
-			
-			dom.bind = function (e, f) {
-				if (typeof f !== 'function') {
-					return false;
-				}
-				
-				dom.each(function () {
-					if (this.node.addEventListener) {
-						this.node.addEventListener(e, f, false);
-					}
-					else if (this.node.attachEvent) {
-						this.node.attachEvent("on" + e, f);
-					}
-					
-					this.node.eventList[e] = f;
-				});
-				
-				return dom;
-			};
-			
-			dom.unbind = function (e) {
-				dom.each(function () {
-					if (typeof this.node.eventList !== "object" || typeof  this.node.eventList[e] !== "object") {
-						return false;
-					}
-					
-					var f = this.node.eventList[e];
-					
-					if (this.node.removeEventListener) {
-						this.node.removeEventListener(e, f, false);
-					}
-					else if (this.node.detachEvent) {
-						this.node.detachEvent("on" + e, f);
-					}
-					
-					delete this.node.eventList[e];
-				});
-				
-				return dom;
-			};
-		
-			dom.getById = function (id) {
-				return [document.getElementById(id)];	
-			};
-			
-			dom.createNode = function (tagName) {
-				return document.createElement(tagName);
-			};
-			
-			dom.append = function (parent, node) {
-				parent = parent[0] || parent;
-				return parent.appendChild(node);
-			};
-			
-			dom.removeClass = function (classesToRemove) {
-				classesToRemove = classesToRemove.split(/\s+/).map(this.trim);
-				
-				dom.each(function () {
-					var 
-						i = 0, l = 0,
-						classestoKeep = [],
-						nodeClasses = this.node.className.split(/\s+/);
-						
-
-					
-					nodeClasses.map(this.trim);
-					
-					for (l = nodeClasses.length; i < l; i++) {
-						if (this.inArray(nodeClasses[i], classesToRemove) === -1) {
-							classestoKeep.push(nodeClasses[i]);
-						}
-					}
-					
-					classestoKeep = classestoKeep.map(this.trim).filter(this.nonEmpty);
-					this.node.className = classestoKeep.join(' ');
-					return true;
-				});
-
-				return dom;
-			};
-			
-			dom.addClass = function (classesToAdd) {
-				classesToAdd = classesToAdd.split(/\s+/).map(this.trim);
-				
-				dom.each(function () {
-					var
-						i = 0, l = 0,
-						nodeClasses = this.node.className.split(/\s+/);
-											
-					
-
-					nodeClasses.map(this.trim);
-					
-					for (l = nodeClasses.length; i < l; i++) {
-						if (this.inArray(nodeClasses[i], classesToAdd) > -1) {
-							classesToAdd.shift();
-						}
-					}
-					
-					nodeClasses = nodeClasses.concat(classesToAdd).filter(this.nonEmpty);
-
-					this.node.className = nodeClasses.join(' ');
-					
-				});
-
-				return dom;
-			};
-			
-			dom.getByClassName = function (className, context) {  
-				context = context || document;
-
-				var
-					classElements = [],
-					els = context.all || context.getElementsByTagName("*"),
-					elsLen = els.length,
-					pattern = new RegExp("(^|\\s)" + className + "(\\s|$)"), 
-					i = 0, j = 0;
-					
-				for (;i < elsLen; i++) {
-					if (pattern.test(els[i].className)) {
-						classElements[j] = els[i];
-						j++;
-					}
-				}
-				
-				return classElements;
-			};
-			
-			/* attr() targets a single dom node except when setting a value */
-			dom.attr = function (name, value) {
-				if (value === undefined) {
-					return dom.node.getAttribute(name);
-				}
-				
-				if (value === '') {
-					dom.node.removeAttribute(name);
-				}
-				
-				dom.each(function () {
-					dom.node.setAttribute(name, value);
-				});
-				
-				return dom;
-			};
-			
-			dom.each = function (callback) {
-				var 
-					i = 0, l = 0,
-					nodes = dom.nodes;
-
-				for (l = nodes.length; i < l; i++) {
-					dom.setNode(nodes[i]);
-					callback.apply(dom, [nodes[i]]);
-				}
-				
-				// restoring previous node.
-				dom.setNode(nodes);
-				return dom;
-			};
-			
-			/* Helper */
-			/* style() targets a single dom node. */
-			dom.style = function (property, value) {
-				if (value === undefined) {
-					return dom.node.style[property];
-				}
-				
-				dom.node.style[property] = value;
-				return dom;	
-			};
-			
-			dom.css = function (rules) {
-				dom.each(function () {
-					for (var property in rules) {
-						this.style(property, rules[property]);
-					}
-				});
-				
-				return dom;
-			};
-
-			dom.hide = function (speed, callback) {
-				var 
-					duration = (typeof speed === "number")  ? speed : speeds[speed] || speeds._default,
-					stepping = 20;
-				
-				dom.each(function () {
-					var 
-						growth = 1 / (duration / stepping),
-						step = 0;
-						
-					if (isNaN(parseFloat(this.style('opacity')))) {
-						this.style('opacity', 1);
-					}
-					else if (parseFloat(this.style('opacity')) === 0) {
-						return false;
-					}
-
-
-					(function animate() {
-						var currentOpacity = 1 - (growth * step);
-
-						step++;
-						
-						currentOpacity = (currentOpacity < 0) ? 0 : ((currentOpacity > 1) ? 1 : currentOpacity);
-
-						dom.css({
-							'filter' : 'alpha(opacity=' + currentOpacity * 100 + ')',
-							'opacity' : currentOpacity,
-							'-moz-opacity' : currentOpacity
-						});
-						
-						if (step * stepping >= duration || currentOpacity === 0) {
-							dom.css({
-								'filter' : 'alpha(opacity=100)',
-								'opacity' : 1,
-								'-moz-opacity' : 1,
-								'display': 'none'
-							});
-							callback.apply(dom.scope, []);
-							return false;
-						}
-
-						setTimeout(animate, stepping, arguments[0]);
-					}());
-				});
-				return dom;
-			};
-			
-			dom.show = function (speed, callback) {
-				var 
-					duration = (typeof speed === "number")  ? speed : speeds[speed] || speeds._default,
-					stepping = 20;
-
-				dom.each(function () {
-					var 
-						growth = 1 / (duration / stepping),
-						step = 0;
-						
-					if (isNaN(parseFloat(this.style('opacity')))) {
-						this.style('opacity', 0);
-					}
-					else if (parseFloat(this.style('opacity')) === 1) {
-						this.style('display', 'block');
-						return false;
-					}
-					
-					this.style('display', 'block');
-					
-					(function animate() {
-						var currentOpacity = 0 + (growth * step);
-						
-						step++;
-						
-						currentOpacity = (currentOpacity < 0) ? 0 : ((currentOpacity > 1) ? 1 : currentOpacity);
-						
-						dom.css({
-							'filter' : 'alpha(opacity=' + currentOpacity * 100 + ')',
-							'opacity' : currentOpacity,
-							'-moz-opacity' : currentOpacity
-						});
-						
-						if (step * stepping >= duration || currentOpacity === 1) {
-							dom.css({
-								'filter' : 'alpha(opacity=100)',
-								'opacity' : 1,
-								'-moz-opacity' : 1,
-								'display': 'block'
-							});
-
-							callback.apply(dom.scope, []);
-							return false;
-						}
-
-						setTimeout(animate, stepping, arguments[0]);
-					}());
-				});
-				return dom;
-			};
-			
-			return dom;
-		};
-		
-		self.dom = self.domApi();
+		self.dom = window.selfDOM();
 
 		(function () {
 			self.$ = $ = function $(node) {
 				var 
-					dom = self.domApi(), 
+					dom = window.selfDOM(), 
 					settings = {}, 
 					nodes = [];
 
