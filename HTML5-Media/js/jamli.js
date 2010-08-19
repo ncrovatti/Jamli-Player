@@ -43,28 +43,6 @@
 		self.isFullScreen = false;
 		self.isCursorOverVolumeSet = false;
 		self.isAudioVolumeSetAnimated = false;
-
-		self.trim = function (text) {
-			return (text || "").replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, "");
-		};
-		
-		self.nonEmpty =  function (e, i, a) {
-			return (e.length === 0) ? false : true;
-		};
-		
-		self.inArray = function (el, array) {
-			if (array.indexOf) {
-				return array.indexOf(el);
-			}
-	
-			for (var i = 0, length = array.length; i < length; i++) {
-				if (array[i] === el) {
-					return i;
-				}
-			}
-			
-			return -1;
-		};
 		
 		// miniQuery
 		self.domApi = function () {
@@ -75,7 +53,30 @@
 					fast : 200,
 					_default : 400
 				};
-
+				
+				
+			dom.trim = function (text) {
+				return (text || "").replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, "");
+			};
+			
+			dom.nonEmpty =  function (e, i, a) {
+				return (e.length === 0) ? false : true;
+			};
+			
+			dom.inArray = function (el, array) {
+				if (array.indexOf) {
+					return array.indexOf(el);
+				}
+		
+				for (var i = 0, length = array.length; i < length; i++) {
+					if (array[i] === el) {
+						return i;
+					}
+				}
+				
+				return -1;
+			};
+		
 			dom.setNode = function (node) {
 				dom.nodes = node;
 				dom.node = node[0] || node;
@@ -88,34 +89,38 @@
 					return false;
 				}
 				
-				
-				if (dom.node.addEventListener) {
-					dom.node.addEventListener(e, f, false);
-				}
-				else if (dom.node.attachEvent) {
-					dom.node.attachEvent("on" + e, f);
-				}
-				
-				dom.node.eventList[e] = f;
+				dom.each(function () {
+					if (this.node.addEventListener) {
+						this.node.addEventListener(e, f, false);
+					}
+					else if (this.node.attachEvent) {
+						this.node.attachEvent("on" + e, f);
+					}
+					
+					this.node.eventList[e] = f;
+				});
 				
 				return dom;
 			};
 			
 			dom.unbind = function (e) {
-				if (typeof dom.node.eventList !== "object") {
-					return false;	
-				}
+				dom.each(function () {
+					if (typeof this.node.eventList !== "object" || typeof  this.node.eventList[e] !== "object") {
+						return false;
+					}
+					
+					var f = this.node.eventList[e];
+					
+					if (this.node.removeEventListener) {
+						this.node.removeEventListener(e, f, false);
+					}
+					else if (this.node.detachEvent) {
+						this.node.detachEvent("on" + e, f);
+					}
+					
+					delete this.node.eventList[e];
+				});
 				
-				var f = dom.node.eventList[e];
-				
-				if (dom.node.removeEventListener) {
-					dom.node.removeEventListener(e, f, false);
-				}
-				else if (dom.node.detachEvent) {
-					dom.node.detachEvent("on" + e, f);
-				}
-				
-				delete dom.node.eventList[e];
 				return dom;
 			};
 		
@@ -133,42 +138,56 @@
 			};
 			
 			dom.removeClass = function (classesToRemove) {
-				var 
-					i = 0, l = 0,
-					classestoKeep = [],
-					nodeClasses = dom.node.className.split(/\s+/);
+				classesToRemove = classesToRemove.split(/\s+/).map(this.trim);
+				
+				dom.each(function () {
+					var 
+						i = 0, l = 0,
+						classestoKeep = [],
+						nodeClasses = this.node.className.split(/\s+/);
+						
+
 					
-				classesToRemove = classesToRemove.split(/\s+/).map(self.trim);
-				nodeClasses.map(self.trim);
-				
-				for (l = nodeClasses.length; i < l; i++) {
-					if (self.inArray(nodeClasses[i], classesToRemove) === -1) {
-						classestoKeep.push(nodeClasses[i]);
+					nodeClasses.map(this.trim);
+					
+					for (l = nodeClasses.length; i < l; i++) {
+						if (this.inArray(nodeClasses[i], classesToRemove) === -1) {
+							classestoKeep.push(nodeClasses[i]);
+						}
 					}
-				}
-				
-				classestoKeep = classestoKeep.map(self.trim).filter(self.nonEmpty);
-				dom.node.className = classestoKeep.join(' ');
+					
+					classestoKeep = classestoKeep.map(this.trim).filter(this.nonEmpty);
+					this.node.className = classestoKeep.join(' ');
+					return true;
+				});
+
 				return dom;
 			};
 			
 			dom.addClass = function (classesToAdd) {
-				var
-					i = 0, l = 0,
-					nodeClasses = dom.node.className.split(/\s+/);
+				classesToAdd = classesToAdd.split(/\s+/).map(this.trim);
+				
+				dom.each(function () {
+					var
+						i = 0, l = 0,
+						nodeClasses = this.node.className.split(/\s+/);
+											
 					
-				classesToAdd = classesToAdd.split(/\s+/).map(self.trim);
-				nodeClasses.map(self.trim);
-				
-				for (l = nodeClasses.length; i < l; i++) {
-					if (self.inArray(nodeClasses[i], classesToAdd) > -1) {
-						classesToAdd.shift();
+
+					nodeClasses.map(this.trim);
+					
+					for (l = nodeClasses.length; i < l; i++) {
+						if (this.inArray(nodeClasses[i], classesToAdd) > -1) {
+							classesToAdd.shift();
+						}
 					}
-				}
-				
-				nodeClasses = nodeClasses.concat(classesToAdd).filter(self.nonEmpty);
-				
-				dom.node.className = nodeClasses.join(' ');
+					
+					nodeClasses = nodeClasses.concat(classesToAdd).filter(this.nonEmpty);
+
+					this.node.className = nodeClasses.join(' ');
+					
+				});
+
 				return dom;
 			};
 			
@@ -192,6 +211,7 @@
 				return classElements;
 			};
 			
+			/* attr() targets a single dom node except when setting a value */
 			dom.attr = function (name, value) {
 				if (value === undefined) {
 					return dom.node.getAttribute(name);
@@ -201,7 +221,9 @@
 					dom.node.removeAttribute(name);
 				}
 				
-				dom.node.setAttribute(name, value);
+				dom.each(function () {
+					dom.node.setAttribute(name, value);
+				});
 				
 				return dom;
 			};
@@ -222,6 +244,7 @@
 			};
 			
 			/* Helper */
+			/* style() targets a single dom node. */
 			dom.style = function (property, value) {
 				if (value === undefined) {
 					return dom.node.style[property];
@@ -369,7 +392,7 @@
 
 					if (settings !== undefined) {
 						nodes = node.replace(settings.prefix, ' ').split(' ');
-						nodes = nodes.map(self.trim).filter(self.nonEmpty);
+						nodes = nodes.map(dom.trim).filter(dom.nonEmpty);
 						return dom.setNode(dom[settings.method](nodes.join(' ')));
 					}
 				} 
@@ -389,7 +412,7 @@
 					self['on' + k](control);
 				} 
 				catch (e) {
-					throw 'on' + k + ' is not a valid callback function';
+					throw "on" + k + "(" + control + ")  is not a valid callback function (" + e + ")";
 				}
 			});
 		};
@@ -413,14 +436,11 @@
 		
 		self.onaudioVolumeSet = function (control) {
 			self.media.volume = parseInt($(control).attr('rel'), 10) / 10;
-		
-			$('.audioVolumeSet').each(function () {
-				this.removeClass('audioVolumeSetLower');
-				
-				if (parseInt(this.attr('rel'), 10) <= Math.round(self.media.volume * 10)) {
-					this.addClass('audioVolumeSetLower');
+			
+			$('.audioVolumeSet').removeClass('audioVolumeSetLower').each(function () {
+				if (parseInt($(this.node).attr('rel'), 10) <= Math.round(self.media.volume * 10)) {
+					$(this.node).addClass('audioVolumeSetLower');
 				}
-				
 			});
 			
 			$('.volumeController').attr('class', self.getVolumeClasses());
@@ -661,12 +681,14 @@
 				self.updateSeekBar();
 			}, 10);
 			*/
+			/*
 			J('#videoWrapper').hover(function () {
 				J('#jamli').show();
 			}, function () {
 				J('#jamli').hide('slow');
 
 			});
+			* */
 			
 			J('.mediaSeekBarCenter').unbind().bind('click', function (e) {
 				self.moveToPosition(e);
