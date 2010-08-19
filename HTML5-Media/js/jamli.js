@@ -449,7 +449,7 @@
 		
 		self.onaudioVolume = function (control) {
 			self.media.muted = !self.media.muted;
-			control.attr('class', self.getVolumeClasses());
+			$(control).attr('class', self.getVolumeClasses());
 		};
 		
 		self.onmediaPlaybackPause = function (control) {
