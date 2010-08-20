@@ -128,7 +128,7 @@
 		};
 		
 		dom.removeClass = function (classesToRemove) {
-			classesToRemove = classesToRemove.split(/\s+/).map(this.trim);
+			classesToRemove = classesToRemove.split(/\s+/).map(dom.trim);
 			
 			dom.each(function () {
 				var 
@@ -155,7 +155,7 @@
 		};
 		
 		dom.addClass = function (classesToAdd) {
-			classesToAdd = classesToAdd.split(/\s+/).map(this.trim);
+			classesToAdd = classesToAdd.split(/\s+/).map(dom.trim);
 			
 			dom.each(function () {
 				var
@@ -256,66 +256,77 @@
 
 		dom.hide = function (speed, callback) {
 			var 
-				duration = (typeof speed === "number")  ? speed : speeds[speed] || speeds._default,
+				duration = dom.getDurationFromString(speed),
 				stepping = 20;
 			
 			dom.each(function () {
 				var 
 					growth = 1 / (duration / stepping),
-					step = 0;
+					step = 0,
+					opacity = parseFloat(this.style('opacity'));
 					
-				if (isNaN(parseFloat(this.style('opacity')))) {
+				if (isNaN(opacity)) {
 					this.style('opacity', 1);
 				}
-				else if (parseFloat(this.style('opacity')) === 0) {
+				else if (opacity === 0) {
 					return false;
 				}
 
 
 				(function animate() {
-					var currentOpacity = 1 - (growth * step);
+					var 
+						currentOpacity = 1 - (growth * step),
+						rules = {};
 
 					step++;
 					
-					currentOpacity = (currentOpacity < 0) ? 0 : ((currentOpacity > 1) ? 1 : currentOpacity);
+					currentOpacity = (currentOpacity < 0) ? 0 :
+						 ((currentOpacity > 1) ? 1 : currentOpacity);
 
-					dom.css({
+					rules = {
 						'filter' : 'alpha(opacity=' + currentOpacity * 100 + ')',
 						'opacity' : currentOpacity,
 						'-moz-opacity' : currentOpacity
-					});
+					};
 					
 					if (step * stepping >= duration || currentOpacity === 0) {
-						dom.css({
-							'filter' : 'alpha(opacity=100)',
-							'opacity' : 1,
-							'-moz-opacity' : 1,
-							'display': 'none'
-						});
-						callback.apply(dom.scope, []);
+						rules.display = 'none';
+						dom.css(rules);
+						
+						if (callback !== undefined) {
+							callback.apply(dom.scope);
+						}
 						return false;
 					}
+					
+					dom.css(rules);
 
-					setTimeout(animate, stepping, arguments[0]);
+					setTimeout(animate, stepping);
 				}());
 			});
 			return dom;
 		};
 		
+		dom.getDurationFromString = function(speed) {
+			return (typeof speed === "number") ? speed : speeds[speed] || speeds._default;
+		};
+		
 		dom.show = function (speed, callback) {
 			var 
-				duration = (typeof speed === "number")  ? speed : speeds[speed] || speeds._default,
+				duration = dom.getDurationFromString(speed),
 				stepping = 20;
 
 			dom.each(function () {
 				var 
 					growth = 1 / (duration / stepping),
-					step = 0;
+					step = 0,
+					opacity = parseFloat(this.style('opacity'));
 					
-				if (isNaN(parseFloat(this.style('opacity')))) {
+					
+				if (isNaN(opacity)) {
 					this.style('opacity', 0);
 				}
-				else if (parseFloat(this.style('opacity')) === 1) {
+				else if (opacity === 1) {
 					this.style('display', 'block');
 					return false;
 				}
@@ -323,31 +334,34 @@
 				this.style('display', 'block');
 				
 				(function animate() {
-					var currentOpacity = 0 + (growth * step);
+					var 
+						currentOpacity = 0 + (growth * step),
+						rules = {};
 					
 					step++;
 					
-					currentOpacity = (currentOpacity < 0) ? 0 : ((currentOpacity > 1) ? 1 : currentOpacity);
+					currentOpacity = (currentOpacity < 0) ? 0 : 
+						((currentOpacity > 1) ? 1 : currentOpacity);
 					
-					dom.css({
+					rules = {
 						'filter' : 'alpha(opacity=' + currentOpacity * 100 + ')',
 						'opacity' : currentOpacity,
 						'-moz-opacity' : currentOpacity
-					});
+					};
 					
 					if (step * stepping >= duration || currentOpacity === 1) {
-						dom.css({
-							'filter' : 'alpha(opacity=100)',
-							'opacity' : 1,
-							'-moz-opacity' : 1,
-							'display': 'block'
-						});
-
-						callback.apply(dom.scope, []);
+						rules.display = 'block';
+						dom.css(rules);
+						
+						if (callback !== undefined) {
+							callback.apply(dom.scope);
+						}
 						return false;
 					}
+					
+					dom.css(rules);
 
-					setTimeout(animate, stepping, arguments[0]);
+					setTimeout(animate, stepping);
 				}());
 			});
 			return dom;
@@ -615,7 +629,7 @@
 		};
 
 		self.registerControls = (function () {
-			J(selector).wrap('<div id="videoWrapper">');
+			J(selector).wrap('<div id="videoWrapper"/>');
 			J(selector).after('<div id="jamli-controls"/>');
 
 			self.createControl('mediaPlaybackStart');
