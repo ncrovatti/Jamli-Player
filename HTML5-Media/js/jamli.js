@@ -35,7 +35,7 @@
 
 (function (window, document, J) {
 	// miniQuery
-	window.selfDOM = window.selfDOM|| function () {
+	window.selfDOM = window.selfDOM || function () {
 		var 
 			dom = {},
 			speeds = {
@@ -69,8 +69,28 @@
 	
 		dom.setNode = function (node) {
 			dom.nodes = node;
-			dom.node = node[0] || node;
-			dom.node.eventList = dom.node.eventList || [];
+			dom.node = node;
+			
+			if (node.length > 1) {
+				dom.node = dom.nodes[0];
+			}
+
+			return dom;
+		};
+		
+		dom.text = dom.html = function (data) {
+			dom.each(function () {
+				this.node.innerHTML = data;
+			});
+			
+			return dom;
+		};
+		
+		dom.after = function (data) {
+			dom.each(function () {
+				this.node.parentNode.insertBefore(data, this.node.nextSibling);
+			});
+			
 			return dom;
 		};
 		
@@ -86,7 +106,7 @@
 				else if (this.node.attachEvent) {
 					this.node.attachEvent("on" + e, f);
 				}
-				
+				this.node.eventList = this.node.eventList || [];
 				this.node.eventList[e] = f;
 			});
 			
@@ -123,7 +143,7 @@
 		};
 		
 		dom.append = function (parent, node) {
-			parent = parent[0] || parent;
+			parent = parent[0] || document.body;
 			return parent.appendChild(node);
 		};
 		
@@ -203,25 +223,37 @@
 		
 		/* attr() targets a single dom node except when setting a value */
 		dom.attr = function (name, value) {
+			
+
 			if (value === undefined) {
-				return dom.node.getAttribute(name);
+				return dom.nodes[0].getAttribute(name);
 			}
 			
 			if (value === '') {
-				dom.node.removeAttribute(name);
+				dom.nodes[0].removeAttribute(name);
 			}
 			
 			dom.each(function () {
-				dom.node.setAttribute(name, value);
+				this.node.setAttribute(name, value);
 			});
 			
 			return dom;
+		};
+		
+		dom.wrapAll = function (target) {
+
+			dom.each(function () {
+				this.node.parentNode.appendChild(target);
+				target.appendChild(this.node.parentNode.removeChild(this.node));
+			});
+			
 		};
 		
 		dom.each = function (callback) {
 			var 
 				i = 0, l = 0,
 				nodes = dom.nodes;
+
 
 			for (l = nodes.length; i < l; i++) {
 				dom.setNode(nodes[i]);
@@ -243,6 +275,7 @@
 			dom.node.style[property] = value;
 			return dom;	
 		};
+		
 		
 		dom.css = function (rules) {
 			dom.each(function () {
@@ -288,6 +321,7 @@
 						'opacity' : currentOpacity,
 						'-moz-opacity' : currentOpacity
 					};
+					
 					
 					if (step * stepping >= duration || currentOpacity === 0) {
 						rules.display = 'none';
@@ -376,15 +410,9 @@
 		var 
 			self = {}, 
 			$;
-		
-		self.media = J(selector)[0];
-		self.isFullScreen = false;
-		self.isCursorOverVolumeSet = false;
-		self.isAudioVolumeSetAnimated = false;
-		self.dom = window.selfDOM();
-
+			
 		(function () {
-			self.$ = $ = function $(node) {
+			window._ = self.$ = $ = function $(node) {
 				var 
 					dom = window.selfDOM(), 
 					settings = {}, 
@@ -392,7 +420,8 @@
 
 				dom.scope = $.caller;
 				
-				if (node.nodeType !== 1) {
+
+				if (typeof node === 'string') {
 					if (node.indexOf('.', 0) > -1) {
 						settings.method = 'getByClassName';
 						settings.prefix = '.';
@@ -405,6 +434,7 @@
 						delete settings;	
 					}
 
+					
 					if (settings !== undefined) {
 						nodes = node.replace(settings.prefix, ' ').split(' ');
 						nodes = nodes.map(dom.trim).filter(dom.nonEmpty);
@@ -418,18 +448,28 @@
 				throw node.toString() + ' is not a valid selector';
 			};
 		}());
+		
+		
+		self.media = $(selector).nodes[0];
+		self.isFullScreen = false;
+		self.isCursorOverVolumeSet = false;
+		self.isAudioVolumeSetAnimated = false;
+		self.dom = window.selfDOM();
 	
 		self.createControl = function (k) {
 			var control = self.dom.append(self.dom.getById('jamli-controls'), self.dom.createNode('span'));
 			
 			$(control).addClass('control ' + k).bind('click', function () {
-				try {
 					self['on' + k](control);
+				try {
+					
 				} 
 				catch (e) {
-					throw "on" + k + "(" + control + ")  is not a valid callback function (" + e + ")";
+					throw "on" + k + "(" + control.toString() + ")  (" + e + ")";
 				}
 			});
+			
+			return control;
 		};
 		
 		
@@ -546,13 +586,9 @@
 
 		self.updateSeekBar = function () {
 			self.isUpdatingSeekBar = true;
-			J('.mediaCurrentPosition').css({'width' : self.media.currentTime / self.media.duration * 100 + '%'});
-			J('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
+			$('.mediaCurrentPosition').css({'width' : self.media.currentTime / self.media.duration * 100 + '%'});
+			$('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
 			self.isUpdatingSeekBar = false; 
-			/*
-			J('.mediaCurrentPosition').animate({width: [self.media.currentTime/self.media.duration * 100 + '%', 'linear']}, 200, function () {
-				self.isUpdatingSeekBar = false;
-			});*/
 		};
 		
 		self.getEventPosition = function (e) {
@@ -627,10 +663,18 @@
 		self.onmediaLengthTimer = function () {
 			return false;
 		};
-
+		
+		
 		self.registerControls = (function () {
-			J(selector).wrap('<div id="videoWrapper"/>');
-			J(selector).after('<div id="jamli-controls"/>');
+			
+			var tempNode = self.dom.createNode('div');
+			tempNode.id = 'videoWrapper';
+			$(selector).wrapAll(tempNode);
+			
+			
+			tempNode = self.dom.createNode('div');
+			tempNode.id = 'jamli-controls';
+			$(selector).after(tempNode);
 
 			self.createControl('mediaPlaybackStart');
 			self.createControl('mediaPlaybackStop');
@@ -640,11 +684,12 @@
 			self.createControl('mediaLengthTimer');
 			
 			for (var i = 0; i <= 10; i++) {
-				self.createControl('audioVolumeSet');
-				J('.audioVolumeSet:last').attr('rel', i);
+				$(self.createControl('audioVolumeSet')).attr('rel', i);
 			}
 			
-			J('.audioVolumeSet').wrapAll('<div id="audioVolumeSet"/>');
+			tempNode = self.dom.createNode('div');
+			tempNode.id = 'audioVolumeSet';
+			$('.audioVolumeSet').wrapAll(tempNode);
 			
 			J('#audioVolumeSet').hover(function () { 
 				self.isCursorOverVolumeSet = true;
