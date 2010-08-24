@@ -1,5 +1,5 @@
 /* 
- * JaMLi - the lightweight Javascript Media Library v0.1
+ * Jamli - the lightweight Javascript Media Library v0.1
  * https://code.google.com/p/html5-media/
  * 
  * 
@@ -24,7 +24,7 @@
  * 
  * Usage: 
  * 
- * window.Video1 = JaMLi('video tag selector');
+ * window.Video1 = Jamli('video tag selector');
  * */
 
 /*jslint plusplus: false, white: true, browser: true, devel: true, forin: true, onevar: true, undef: true, nomen: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, strict: true */
@@ -138,13 +138,25 @@
 			return [document.getElementById(id)];	
 		};
 		
-		dom.createNode = function (tagName) {
-			return document.createElement(tagName);
+		dom.createNode = function (tagName, attributes) {
+			attributes = attributes || {};
+			
+			var e = document.createElement(tagName);
+
+			for (var attribute in attributes) {
+				e.setAttribute(attribute, attributes[attribute]);
+			}
+			
+			return e; 
 		};
 		
 		dom.append = function (parent, node) {
-			parent = parent[0] || document.body;
-			return parent.appendChild(node);
+			//console.log(parent, (parent instanceof Array), (typeof parent), parent.nodeType);
+			parent = (parent instanceof Array) ? parent[0] : parent;
+			//console.log(parent, node);
+			var result = parent.appendChild(node);
+			console.log('appending : ', node, ' to ', parent, ' Here is the result: ', result);
+			return result;
 		};
 		
 		dom.removeClass = function (classesToRemove) {
@@ -155,8 +167,6 @@
 					i = 0, l = 0,
 					classestoKeep = [],
 					nodeClasses = this.node.className.split(/\s+/);
-					
-
 				
 				nodeClasses.map(this.trim);
 				
@@ -181,8 +191,6 @@
 				var
 					i = 0, l = 0,
 					nodeClasses = this.node.className.split(/\s+/);
-										
-				
 
 				nodeClasses.map(this.trim);
 				
@@ -406,7 +414,7 @@
 	
 
 
-	window.JaMLi = window.JaMLi || function (selector) {
+	window.Jamli = window.Jamli || function (selector) {
 		var 
 			self = {}, 
 			$;
@@ -666,31 +674,32 @@
 		
 		
 		self.registerControls = (function () {
+			var 
+				curentPositionElement			= self.dom.createNode('div', {'class' : 'mediaCurrentPosition'}),
+				jamliControlsElement			= self.dom.createNode('div', {id : 'jamli-controls'}),
+				mediaLengthPopupTimerElement	= self.dom.createNode('div', {'class' : 'shaded mediaLengthPopupTimer'}),
+				mediaSeekBarCenterElement		= self.dom.createNode('div', {'class' : 'mediaSeekBarCenter'});
 			
-			var tempNode = self.dom.createNode('div');
-			tempNode.id = 'videoWrapper';
-			$(selector).wrapAll(tempNode);
-			
-			
-			tempNode = self.dom.createNode('div');
-			tempNode.id = 'jamli-controls';
-			$(selector).after(tempNode);
+			$(selector).wrapAll(self.dom.createNode('div', {id: 'videoWrapper'}));
 
+			self.dom.append(curentPositionElement, mediaLengthPopupTimerElement);
+			self.dom.append(mediaSeekBarCenterElement, curentPositionElement);
+			self.dom.append(jamliControlsElement, mediaSeekBarCenterElement);
+			$(selector).after(jamliControlsElement);
+			
 			self.createControl('mediaPlaybackStart');
 			self.createControl('mediaPlaybackStop');
 			self.createControl(self.getVolumeClass());
-			
 			self.createControl('viewFullscreen');
 			self.createControl('mediaLengthTimer');
 			
 			for (var i = 0; i <= 10; i++) {
 				$(self.createControl('audioVolumeSet')).attr('rel', i);
 			}
-			
-			tempNode = self.dom.createNode('div');
-			tempNode.id = 'audioVolumeSet';
-			$('.audioVolumeSet').wrapAll(tempNode);
-			
+
+			$('.audioVolumeSet').wrapAll(self.dom.createNode('div', {id: 'audioVolumeSet'}));
+
+
 			J('#audioVolumeSet').hover(function () { 
 				self.isCursorOverVolumeSet = true;
 			}, 
@@ -713,8 +722,6 @@
 			});
 			
 			J('.audioVolumeSet:nth-child(8)').trigger('click');
-			
-			J('#jamli-controls').before('<div class="mediaSeekBarCenter"><div class="mediaCurrentPosition"/><div class="shaded mediaLengthPopupTimer"/></div>');
 			J('#jamli-controls, .mediaSeekBarCenter').wrapAll('<div id="jamli" class="shaded"/>');
 			
 			$(self.media).bind('timeupdate', function () {
@@ -781,5 +788,5 @@
 
 
 jQuery(document).ready(function () {
-	window.videoElement = window.JaMLi('#myVideo');
+	window.videoElement = window.Jamli('#myVideo');
 });
