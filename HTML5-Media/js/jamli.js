@@ -151,12 +151,7 @@
 		};
 		
 		dom.append = function (parent, node) {
-			//console.log(parent, (parent instanceof Array), (typeof parent), parent.nodeType);
-			parent = (parent instanceof Array) ? parent[0] : parent;
-			//console.log(parent, node);
-			var result = parent.appendChild(node);
-			console.log('appending : ', node, ' to ', parent, ' Here is the result: ', result);
-			return result;
+			return ((parent instanceof Array) ? parent[0] : parent).appendChild(node);
 		};
 		
 		dom.removeClass = function (classesToRemove) {
