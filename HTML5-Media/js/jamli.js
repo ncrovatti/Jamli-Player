@@ -43,15 +43,15 @@
 				fast : 200,
 				_default : 400
 			};
+		
+		dom.trigger = function(event) {
+			dom.each(function () {
+				if (typeof this.node.eventList[event] === 'function') {
+					this.node.eventList[event]();	
+				}
+			});
 			
-		dom.position = function () {
-			var offset = dom.node[0].getBoundingClientRect();
-
-			// Subtract the two offsets
-			return {
-				top:  offset.top,
-				left: offset.left
-			};
+			return dom;
 		};
 		
 		dom.trim = function (text) {
@@ -150,9 +150,11 @@
 		dom.createNode = function (tagName, attributes) {
 			attributes = attributes || {};
 			
-			var e = document.createElement(tagName);
+			var 
+				e = document.createElement(tagName),
+				attribute;
 
-			for (var attribute in attributes) {
+			for (attribute in attributes) {
 				e.setAttribute(attribute, attributes[attribute]);
 			}
 			
@@ -351,7 +353,7 @@
 			return dom;
 		};
 		
-		dom.getDurationFromString = function(speed) {
+		dom.getDurationFromString = function (speed) {
 			return (typeof speed === "number") ? speed : speeds[speed] || speeds._default;
 		};
 		
@@ -541,19 +543,11 @@
 		self.onmediaPlaybackStop = function (control) {
 			self.media.pause();
 			self.media.currentTime = 0;
-			
-			setTimeout(function () { 
-				self.updateSeekBar();
-			}, 250);
-			
+
 			if ($('.mediaPlaybackPause').node.length > 0) {
-				$('.mediaPlaybackPause').unbind('click').removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart');
+				$('.mediaPlaybackPause').trigger('click');
 			}
-			
-			$('.mediaPlaybackStart').bind('click', function () {
-				self.onmediaPlaybackStart(this);
-			});
-			
+
 			return true;
 		}; 
 		
@@ -652,10 +646,10 @@
         self.getEventPosition = function (e) {
             // http://www.quirksmode.org/js/events_properties.html
             if (e.pageX) {
-                    return e.pageX;
+            	return e.pageX;
             }
             else if (e.clientX) {
-                    return e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+            	return e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
             }
         };
 
@@ -724,18 +718,19 @@
 				setTimeout(self.showVolumeSet, 500);
 			});
 			
-			J('.audioVolumeSet:nth-child(8)').trigger('click');
+			$('.audioVolumeSet:nth-child(8)').trigger('click');
 			J('#jamli-controls, .mediaSeekBarCenter').wrapAll('<div id="jamli" class="shaded"/>');
 			
 			$(self.media).bind('timeupdate', function () {
 				if (self.media.ended === true) {
-					J('.mediaPlaybackStop').trigger('click');
+					$('.mediaPlaybackStop').trigger('click');
 					return true;
 				}
 				
-				if (self.isUpdatingSeekBar || self.media.paused === true) {
+				if (self.isUpdatingSeekBar) {
 					return false;
 				}
+				
 				self.updateSeekBar();
 			}); 
 						
@@ -772,16 +767,18 @@
 			});
 			
 			$(self.media).bind('loadedmetadata', function () {
+				/*
 				if (self.media.videoHeight === 0) {
 					J(selector).attr('poster', 'medias/poster-audio.png');
 				}
+				* */
 	
 				J('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
-			}).bind('progress', function(e) {
+			}).bind('progress', function (e) {
 				
-			}).bind('ended', function(e) {
-				J('.mediaPlaybackStop').trigger('click');
-			});;
+			}).bind('ended', function (e) {
+				$('.mediaPlaybackStop').trigger('click');
+			});
 		
 			return true;
 		}());
