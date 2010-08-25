@@ -44,7 +44,16 @@
 				_default : 400
 			};
 			
-			
+		dom.position = function () {
+			var offset = dom.node[0].getBoundingClientRect();
+
+			// Subtract the two offsets
+			return {
+				top:  offset.top,
+				left: offset.left
+			};
+		};
+		
 		dom.trim = function (text) {
 			return (text || "").replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, "");
 		};
@@ -210,11 +219,11 @@
 			var
 				classElements = [],
 				els = context.all || context.getElementsByTagName("*"),
-				elsLen = els.length,
+				l = els.length,
 				pattern = new RegExp("(^|\\s)" + className + "(\\s|$)"), 
 				i = 0, j = 0;
 				
-			for (;i < elsLen; i++) {
+			for (;i < l; i++) {
 				if (pattern.test(els[i].className)) {
 					classElements[j] = els[i];
 					j++;
@@ -226,8 +235,6 @@
 		
 		/* attr() targets a single dom node except when setting a value */
 		dom.attr = function (name, value) {
-			
-
 			if (value === undefined) {
 				return dom.nodes[0].getAttribute(name);
 			}
@@ -457,6 +464,7 @@
 		self.isFullScreen = false;
 		self.isCursorOverVolumeSet = false;
 		self.isAudioVolumeSetAnimated = false;
+		self.isUpdatingSeekBar = false;
 		self.dom = window.selfDOM();
 	
 		self.createControl = function (k) {
@@ -588,34 +596,28 @@
 		
 
 		self.updateSeekBar = function () {
-			self.isUpdatingSeekBar = true;
 			$('.mediaCurrentPosition').css({'width' : self.media.currentTime / self.media.duration * 100 + '%'});
 			$('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
 			self.isUpdatingSeekBar = false; 
 		};
 		
-		self.getEventPosition = function (e) {
-			// http://www.quirksmode.org/js/events_properties.html
-			if (e.pageX) {
-				return e.pageX;
-			}
-			else if (e.clientX) {
-				return e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-			}
-		};
-		
-		
 		self.moveToPosition = function (e) {
 			var 
-				posx = self.getEventPosition(e) - J('.mediaSeekBarCenter')[0].offsetParent.offsetLeft,
+				b = e.currentTarget.getBoundingClientRect(),
 				percent;
-			
-			percent = self.media.duration * (posx / J('.mediaSeekBarCenter').width());
+				
+			// prevents event queueing
+			if (self.isUpdatingSeekBar) {	 
+				return true;
+			}
 
+			percent = self.media.duration * ((self.getEventPosition(e) - b.left) / b.width);
+			
 			self.media.currentTime = percent.toFixed(1);
 
 			// currentTime is updated only every 250ms.
 			self.updateSeekBarInterval = setInterval(function () {
+				self.isUpdatingSeekBar = true;
 				if (self.media.currentTime.toFixed(1) === percent.toFixed(1)) {
 					self.updateSeekBar();
 					clearInterval(self.updateSeekBarInterval);
@@ -644,42 +646,48 @@
 		};
 		
 		self.getNiceTimeAndDuration = function () {
-			var niceElapsedTime, niceDurationTime;
+			return self.formatTime(self.media.currentTime) + '/' + self.formatTime(self.media.duration);
+		};
+		
+        self.getEventPosition = function (e) {
+            // http://www.quirksmode.org/js/events_properties.html
+            if (e.pageX) {
+                    return e.pageX;
+            }
+            else if (e.clientX) {
+                    return e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+            }
+        };
 
-			niceElapsedTime = self.formatTime(self.media.currentTime);
-			niceDurationTime = self.formatTime(self.media.duration);
-			
-			return niceElapsedTime + '/' + niceDurationTime;
+		self.getTimeFromEvent = function (e) {
+			var b = e.currentTarget.getBoundingClientRect();
+			return self.formatTime(self.media.duration * ((self.getEventPosition(e) - b.left) / b.width));
 		};
-		
-		self.getTimeFromEvent = function (e, element) {
-			var 
-				posx = self.getEventPosition(e) - element[0].offsetParent.offsetLeft,
-				time, niceElapsedTime;
-				
-			time = self.media.duration * (posx / element.width());
-			
-			niceElapsedTime = self.formatTime(time);
-			return niceElapsedTime;
-		};
-		
-		self.onmediaLengthTimer = function () {
-			return false;
-		};
-		
+
 		
 		self.registerControls = (function () {
+			/*	
+				<videoWrapper>
+					<jamliControlsElement>
+						<mediaSeekBarCenterElement>
+							<curentPositionElement>
+								<mediaLengthPopupTimer></mediaLengthPopupTimer>
+							</curentPositionElement>
+						</mediaSeekBarCenterElement>
+					</jamliControlsElement>
+				</videoWrapper>
+			 * */
 			var 
 				curentPositionElement			= self.dom.createNode('div', {'class' : 'mediaCurrentPosition'}),
 				jamliControlsElement			= self.dom.createNode('div', {id : 'jamli-controls'}),
-				mediaLengthPopupTimerElement	= self.dom.createNode('div', {'class' : 'shaded mediaLengthPopupTimer'}),
 				mediaSeekBarCenterElement		= self.dom.createNode('div', {'class' : 'mediaSeekBarCenter'});
 			
 			$(selector).wrapAll(self.dom.createNode('div', {id: 'videoWrapper'}));
-
-			self.dom.append(curentPositionElement, mediaLengthPopupTimerElement);
+			
+			self.dom.append(curentPositionElement, self.dom.createNode('div', {'class' : 'shaded mediaLengthPopupTimer'}));
 			self.dom.append(mediaSeekBarCenterElement, curentPositionElement);
 			self.dom.append(jamliControlsElement, mediaSeekBarCenterElement);
+			
 			$(selector).after(jamliControlsElement);
 			
 			self.createControl('mediaPlaybackStart');
@@ -755,12 +763,12 @@
 			J('.mediaSeekBarCenter').unbind().bind('click', function (e) {
 				self.moveToPosition(e);
 			}).hover(function (e) {
-				J('.mediaLengthPopupTimer').show();
+				$('.mediaLengthPopupTimer').css({display: 'block'});
 			}, function (e) {
-				J('.mediaLengthPopupTimer').hide();
+				$('.mediaLengthPopupTimer').css({display: 'none'});
 			}).bind('mousemove', function (e) {
-				var leftPos = self.getEventPosition(e) - J('.mediaSeekBarCenter')[0].scrollWidth;
-				J('.mediaLengthPopupTimer').text(self.getTimeFromEvent(e, J(this))).css({'left' : leftPos + 'px'});
+				var b = this.getBoundingClientRect();
+				$('.mediaLengthPopupTimer').text(self.getTimeFromEvent(e)).css({left: (self.getEventPosition(e) - b.left) +'px'});
 			});
 			
 			$(self.media).bind('loadedmetadata', function () {
@@ -769,7 +777,11 @@
 				}
 	
 				J('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
-			});
+			}).bind('progress', function(e) {
+				
+			}).bind('ended', function(e) {
+				J('.mediaPlaybackStop').trigger('click');
+			});;
 		
 			return true;
 		}());
