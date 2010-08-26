@@ -479,6 +479,7 @@
 		self.isAudioVolumeSetAnimated = false;
 		self.isUpdatingSeekBar = false;
 		self.dom = window.selfDOM();
+		self.defaultVolume = 3;
 	
 		self.createControl = function (k) {
 			var control = self.dom.append(self.dom.getById('jamli-controls'), self.dom.createNode('span'));
@@ -552,17 +553,6 @@
 			return true;
 		};
 		
-		self.onmediaPlaybackStop = function (control) {
-			self.media.pause();
-			self.media.currentTime = 0;
-
-			if ($('.mediaPlaybackPause').node.length > 0) {
-				$('.mediaPlaybackPause').trigger('click');
-			}
-
-			return true;
-		}; 
-		
 		self.onviewFullscreen = function (control) {
 			var pos = 'fixed';
 			self.isFullScreen = !self.isFullScreen;
@@ -615,6 +605,7 @@
 			if (self.isUpdatingSeekBar) {	 
 				return true;
 			}
+	
 
 			percent = self.media.duration * ((self.getEventPosition(e) - b.left) / b.width);
 			
@@ -671,66 +662,55 @@
 
 		
 		self.registerControls = (function () {
+			
 			/*
 				<videoWrapper>
 					<jamliControlsElement>
 						<mediaSeekBarCenterElement>
-							<curentPositionElement>
-								<mediaLengthPopupTimer></mediaLengthPopupTimer>
-							</curentPositionElement>
+							<currentPositionElement></currentPositionElement>
+							<currentLoadedElement></currentLoadedElement>
 						</mediaSeekBarCenterElement>
 					</jamliControlsElement>
+					<mediaLengthPopupTimer></mediaLengthPopupTimer>
 				</videoWrapper>
 			 * */
 			var 
 				jamliElement					= self.dom.createNode('div', {id: 'jamli', 'class': 'shaded'}),
-				curentPositionElement			= self.dom.createNode('div', {'class' : 'mediaCurrentPosition'}),
+				currentPositionElement			= self.dom.createNode('div', {'class' : 'mediaCurrentPosition'}),
+				currentLoadedElement			= self.dom.createNode('div', {'class' : 'mediaCurrentLoadedData'}),
 				jamliControlsElement			= self.dom.createNode('div', {id : 'jamli-controls'}),
-				mediaSeekBarCenterElement		= self.dom.createNode('div', {'class' : 'mediaSeekBarCenter'});
+				mediaSeekBarCenterElement		= self.dom.createNode('div', {'class' : 'mediaSeekBarCenter'}),
+				i = 0, audioVolumeSetElement;
 			
 			$(selector).wrapAll(self.dom.createNode('div', {id: 'videoWrapper'}));
 			
 			
-			self.dom.append(mediaSeekBarCenterElement, curentPositionElement);
-		
+			self.dom.append(mediaSeekBarCenterElement, currentPositionElement);
+			self.dom.append(mediaSeekBarCenterElement, currentLoadedElement);
+			
 			self.dom.append(jamliControlsElement, mediaSeekBarCenterElement);
 			
 			$(selector).after(jamliControlsElement);
 			
 			self.createControl('mediaPlaybackStart');
-			self.createControl('mediaPlaybackStop');
 			self.createControl(self.getVolumeClass());
 			self.createControl('viewFullscreen');
 			self.createControl('mediaLengthTimer');
+			self.createControl('mediaWaiter');
+			$('.mediaWaiter').css({display: 'none'});
 			
-			for (var i = 0; i <= 10; i++) {
-				$(self.createControl('audioVolumeSet')).attr('rel', i);
+			
+			for (; i <= 10; i++) {
+				audioVolumeSetElement = self.createControl('audioVolumeSet');
+				$(audioVolumeSetElement).attr('rel', i);
+				
+				if (i === self.defaultVolume) {
+					$(audioVolumeSetElement).trigger('click');
+				}
 			}
 
 			$('.audioVolumeSet').wrapAll(self.dom.createNode('div', {id: 'audioVolumeSet'}));
 
-
-			$('#audioVolumeSet').hover(function () { 
-				self.isCursorOverVolumeSet = true;
-			}, 
-			function () {
-				self.isCursorOverVolumeSet = false;
-				setTimeout(self.showVolumeSet, 500);
-			});
-
-			$('.audioVolumeHigh, .audioVolumeMid, .audioVolumeLow').addClass('volumeController').hover(function () {
-				$('#audioVolumeSet').show("slow", function () {
-					self.isAudioVolumeSetAnimated = false;
-				});
-			}, 
-			function () {
-				if (self.isAudioVolumeSetAnimated === true) {
-					return true;
-				}
-				
-				setTimeout(self.showVolumeSet, 500);
-			});
-			
 			$('#jamli-controls').wrapAll(jamliElement);
 			
 			self.dom.append(jamliElement, self.dom.createNode('div', {'class' : 'shaded mediaLengthPopupTimer'}));
@@ -751,6 +731,7 @@
 			$('.mediaSeekBarCenter').unbind().bind('click', function (e) {
 				
 				self.moveToPosition(e);
+				
 			}).hover(function (e) {
 				
 				$('.mediaLengthPopupTimer').css({display: 'block'});
@@ -762,6 +743,7 @@
 			}).bind('mousemove', function (e) {
 				
 				var b = this.getBoundingClientRect();
+				
 				$('.mediaLengthPopupTimer').text(self.getTimeFromEvent(e)).css({
 					left: (self.getEventPosition(e) - b.left) + 'px'
 				});
@@ -773,9 +755,24 @@
 				
 			}).bind('progress', function (e) {
 
+				if (e.lengthComputable === true) {
+					$('.mediaCurrentLoadedData').css({
+						width : (e.loaded / e.total) * 100 + '%'
+					});
+				}
 			}).bind('ended', function (e) {
+				console.log('waiting', e);
+			}).bind('seeking', function (e) {
 				
-				$('.mediaPlaybackStop').trigger('click');
+				$('.mediaWaiter').css({display: 'block'});
+				
+			}).bind('waiting', function (e) {
+				
+				console.log('waiting', e);
+				
+			}).bind('seeked', function (e) {
+				$('.mediaWaiter').css({display: 'none'});
+				$('.mediaPlaybackStart').trigger('click');
 				
 			});
 		
