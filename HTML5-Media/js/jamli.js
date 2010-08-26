@@ -28,13 +28,60 @@
  * */
 
 /*jslint plusplus: false, white: true, browser: true, devel: true, forin: true, onevar: true, undef: true, nomen: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, strict: true */
-/*global window, document, jQuery, J */
+/*global window, document, $ */
 
        
 "use strict";
 
-(function (window, document, J) {
+(function (window, document) {
 	// miniQuery
+	(function () {
+		window.$ = function $(node) {
+			var 
+				dom = window.selfDOM(), 
+				settings = {},
+				nodes = [], 
+				selector, selectors = [],
+				nodeAccumulator = [];	
+
+			dom.scope = $.caller;
+							
+			if (typeof node === 'string') {
+				selectors = node.split(',').map(dom.trim).filter(dom.nonEmpty);
+				if (selectors.length > 1) {
+					for (selector in selectors) {
+						nodeAccumulator.push($(selectors[selector]).nodes);
+					}
+					nodeAccumulator = nodeAccumulator[0].filter(dom.nonEmpty);
+					return dom.setNode(nodeAccumulator);
+				}
+				
+				if (node.indexOf('.', 0) > -1) {
+					settings.method = 'getByClassName';
+					settings.prefix = '.';
+				}
+				else if (node.indexOf('#', 0) > -1) {
+					settings.method = 'getById';
+					settings.prefix = '#';
+				}
+				else {
+					delete settings;
+				}
+
+				if (settings !== undefined) {
+					nodes = node.replace(settings.prefix, ' ').split(' ');
+					nodes = nodes.map(dom.trim).filter(dom.nonEmpty);
+					return dom.setNode(dom[settings.method](nodes.join(' ')));
+				}
+			} 
+			else {
+				return dom.setNode([node]);
+			}
+			
+			throw node.toString() + ' is not a valid selector';
+		};
+	}());
+		
 	window.selfDOM = window.selfDOM || function () {
 		var 
 			dom = {},
@@ -44,7 +91,7 @@
 				_default : 400
 			};
 		
-		dom.trigger = function(event) {
+		dom.trigger = function (event) {
 			dom.each(function () {
 				if (typeof this.node.eventList[event] === 'function') {
 					this.node.eventList[event]();	
@@ -60,6 +107,11 @@
 		
 		dom.nonEmpty =  function (e, i, a) {
 			return (e.length === 0) ? false : true;
+		};
+		
+		dom.hover = function (fnIn, fnOut) {
+			dom.bind('mouseover', fnIn).bind('mouseout', fnOut);
+			return dom;	
 		};
 		
 		dom.inArray = function (el, array) {
@@ -115,6 +167,7 @@
 				else if (this.node.attachEvent) {
 					this.node.attachEvent("on" + e, f);
 				}
+				
 				this.node.eventList = this.node.eventList || [];
 				this.node.eventList[e] = f;
 			});
@@ -124,7 +177,7 @@
 		
 		dom.unbind = function (e) {
 			dom.each(function () {
-				if (typeof this.node.eventList !== "object" || typeof  this.node.eventList[e] !== "object") {
+				if (typeof this.node.eventList !== "object" || typeof this.node.eventList[e] !== "object") {
 					return false;
 				}
 				
@@ -411,57 +464,15 @@
 				}());
 			});
 			return dom;
-		};
-		
+		};	
 		return dom;
 	};
 	
 
 
 	window.Jamli = window.Jamli || function (selector) {
-		var 
-			self = {}, 
-			$;
-			
-		(function () {
-			window._ = self.$ = $ = function $(node) {
-				var 
-					dom = window.selfDOM(), 
-					settings = {}, 
-					nodes = [];
+		var self = {};
 
-				dom.scope = $.caller;
-				
-
-				if (typeof node === 'string') {
-					if (node.indexOf('.', 0) > -1) {
-						settings.method = 'getByClassName';
-						settings.prefix = '.';
-					} 
-					else if (node.indexOf('#', 0) > -1) {
-						settings.method = 'getById';
-						settings.prefix = '#';
-					}
-					else {
-						delete settings;	
-					}
-
-					
-					if (settings !== undefined) {
-						nodes = node.replace(settings.prefix, ' ').split(' ');
-						nodes = nodes.map(dom.trim).filter(dom.nonEmpty);
-						return dom.setNode(dom[settings.method](nodes.join(' ')));
-					}
-				} 
-				else {
-					return dom.setNode([node]);
-				}
-				
-				throw node.toString() + ' is not a valid selector';
-			};
-		}());
-		
-		
 		self.media = $(selector).nodes[0];
 		self.isFullScreen = false;
 		self.isCursorOverVolumeSet = false;
@@ -473,9 +484,10 @@
 			var control = self.dom.append(self.dom.getById('jamli-controls'), self.dom.createNode('span'));
 			
 			$(control).addClass('control ' + k).bind('click', function () {
-					self['on' + k](control);
 				try {
-					
+					if (typeof self['on' + k] === 'function') {
+						self['on' + k](control);
+					}
 				} 
 				catch (e) {
 					throw "on" + k + "(" + control.toString() + ")  (" + e + ")";
@@ -587,7 +599,6 @@
 				});
 			}
 		};
-		
 
 		self.updateSeekBar = function () {
 			$('.mediaCurrentPosition').css({'width' : self.media.currentTime / self.media.duration * 100 + '%'});
@@ -660,7 +671,7 @@
 
 		
 		self.registerControls = (function () {
-			/*	
+			/*
 				<videoWrapper>
 					<jamliControlsElement>
 						<mediaSeekBarCenterElement>
@@ -672,14 +683,16 @@
 				</videoWrapper>
 			 * */
 			var 
+				jamliElement					= self.dom.createNode('div', {id: 'jamli', 'class': 'shaded'}),
 				curentPositionElement			= self.dom.createNode('div', {'class' : 'mediaCurrentPosition'}),
 				jamliControlsElement			= self.dom.createNode('div', {id : 'jamli-controls'}),
 				mediaSeekBarCenterElement		= self.dom.createNode('div', {'class' : 'mediaSeekBarCenter'});
 			
 			$(selector).wrapAll(self.dom.createNode('div', {id: 'videoWrapper'}));
 			
-			self.dom.append(curentPositionElement, self.dom.createNode('div', {'class' : 'shaded mediaLengthPopupTimer'}));
+			
 			self.dom.append(mediaSeekBarCenterElement, curentPositionElement);
+		
 			self.dom.append(jamliControlsElement, mediaSeekBarCenterElement);
 			
 			$(selector).after(jamliControlsElement);
@@ -697,7 +710,7 @@
 			$('.audioVolumeSet').wrapAll(self.dom.createNode('div', {id: 'audioVolumeSet'}));
 
 
-			J('#audioVolumeSet').hover(function () { 
+			$('#audioVolumeSet').hover(function () { 
 				self.isCursorOverVolumeSet = true;
 			}, 
 			function () {
@@ -705,7 +718,7 @@
 				setTimeout(self.showVolumeSet, 500);
 			});
 
-			J('.audioVolumeHigh, .audioVolumeMid, .audioVolumeLow').addClass('volumeController').hover(function () {
+			$('.audioVolumeHigh, .audioVolumeMid, .audioVolumeLow').addClass('volumeController').hover(function () {
 				$('#audioVolumeSet').show("slow", function () {
 					self.isAudioVolumeSetAnimated = false;
 				});
@@ -718,8 +731,9 @@
 				setTimeout(self.showVolumeSet, 500);
 			});
 			
-			$('.audioVolumeSet:nth-child(8)').trigger('click');
-			J('#jamli-controls, .mediaSeekBarCenter').wrapAll('<div id="jamli" class="shaded"/>');
+			$('#jamli-controls').wrapAll(jamliElement);
+			
+			self.dom.append(jamliElement, self.dom.createNode('div', {'class' : 'shaded mediaLengthPopupTimer'}));
 			
 			$(self.media).bind('timeupdate', function () {
 				if (self.media.ended === true) {
@@ -733,51 +747,36 @@
 				
 				self.updateSeekBar();
 			}); 
-						
-			/*
-			setInterval(function () {
-				if (self.media.ended === true) {
-					J('.mediaPlaybackStop').trigger('click');
-				}
-				
-				if (self.isUpdatingSeekBar || self.media.paused === true) {
-					return false;
-				}
-				self.updateSeekBar();
-			}, 10);
-			*/
-			/*
-			J('#videoWrapper').hover(function () {
-				J('#jamli').show();
-			}, function () {
-				J('#jamli').hide('slow');
 
-			});
-			* */
-			
-			J('.mediaSeekBarCenter').unbind().bind('click', function (e) {
+			$('.mediaSeekBarCenter').unbind().bind('click', function (e) {
+				
 				self.moveToPosition(e);
 			}).hover(function (e) {
+				
 				$('.mediaLengthPopupTimer').css({display: 'block'});
+				
 			}, function (e) {
+				
 				$('.mediaLengthPopupTimer').css({display: 'none'});
+				
 			}).bind('mousemove', function (e) {
+				
 				var b = this.getBoundingClientRect();
-				$('.mediaLengthPopupTimer').text(self.getTimeFromEvent(e)).css({left: (self.getEventPosition(e) - b.left) +'px'});
+				$('.mediaLengthPopupTimer').text(self.getTimeFromEvent(e)).css({
+					left: (self.getEventPosition(e) - b.left) + 'px'
+				});
 			});
 			
 			$(self.media).bind('loadedmetadata', function () {
-				/*
-				if (self.media.videoHeight === 0) {
-					J(selector).attr('poster', 'medias/poster-audio.png');
-				}
-				* */
-	
-				J('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
-			}).bind('progress', function (e) {
 				
+				$('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
+				
+			}).bind('progress', function (e) {
+
 			}).bind('ended', function (e) {
+				
 				$('.mediaPlaybackStop').trigger('click');
+				
 			});
 		
 			return true;
@@ -787,7 +786,7 @@
 		return self;
 	};
 
-}(window, document, jQuery));
+}(window, document));
 
 
 
