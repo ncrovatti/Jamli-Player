@@ -545,6 +545,7 @@
 		};
 		
 		self.onmediaPlaybackStart = function (control) {
+			$('.playOverlay').css({display:'none'});
 			self.media.play();
 			
 			$(control).removeClass('mediaPlaybackStart').addClass('mediaPlaybackPause').unbind('click').bind('click', function () {
@@ -717,7 +718,6 @@
 			$('#jamli').after(self.dom.createNode('div', {'class' : 'playOverlay'}));
 			
 			$('.playOverlay').bind('click', function() {
-				$(this).css({display: 'none'});
 				$('.mediaPlaybackStart').trigger('click');
 			});
 			
@@ -771,7 +771,6 @@
 				$('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
 				
 			}).bind('progress', function (e) {
-
 				if (e.lengthComputable === true) {
 					$('.mediaCurrentLoadedData').css({
 						width : (e.loaded / e.total) * 100 + '%'
@@ -790,7 +789,6 @@
 			}).bind('seeked', function (e) {
 				$('.mediaWaiter').css({display: 'none'});
 				$('.mediaPlaybackStart').trigger('click');
-				
 			});
 		
 			return true;
@@ -802,8 +800,14 @@
 
 }(window, document));
 
-
-
-jQuery(document).ready(function () {
+var onReady = function () {
 	window.videoElement = window.Jamli('#myVideo');
-});
+};
+
+if (document.addEventListener) {
+	document.addEventListener("DOMContentLoaded", onReady, false);
+} 
+else if (document.attachEvent) {
+	document.attachEvent("onreadystatechange", onReady);
+}
+		

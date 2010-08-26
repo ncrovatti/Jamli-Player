@@ -1,12 +1,12 @@
 #videoWrapper {
 	position: relative;
-	-moz-box-shadow: 0 4px 20px #444;
-	-webkit-box-shadow: 0 4px 20px #444;
-	box-shadow: 0 4px 20px #444;
+	-moz-box-shadow: 0 4px 20px #000;
+	-webkit-box-shadow: 0 4px 20px #000;
+	box-shadow: 0 4px 20px #000;
 }
 
 #jamli {
-	background-color: #CCCCCC;
+	background-color: #ccc;
 	min-width: 340px;
 	padding: 1%;
 	position: absolute;
@@ -19,9 +19,9 @@
 }
 
 .shaded {
-	-moz-box-shadow: 0 0 9px #444;
-	-webkit-box-shadow: 0 0 9px #444;
-	box-shadow: 0 0 9px #444;
+	-moz-box-shadow: 0 0 9px #000;
+	-webkit-box-shadow: 0 0 9px #000;
+	box-shadow: 0 0 9px #000;
 }
 
 #jamli-controls .control {
@@ -124,9 +124,9 @@
 .mediaLengthPopupTimer {
 	-moz-border-radius: 5px 5px 5px 5px;
 	-webkit-border-radius: 5px 5px 5px 5px;
-	background: none repeat scroll 0 0 #444444;
-	border: 1px solid #EEEEEE;
-	color: #EEEEEE;
+	background: none repeat scroll 0 0 #333;
+	border: 1px solid #eee;
+	color: #eee;
 	display: none;
 	padding: 3px;
 	position: absolute;
