@@ -205,7 +205,7 @@ body {
 
 #header {
 	margin-bottom: 20px;
-	text-shadow:1px 1px 2px #909499;
+	text-shadow:1px 1px 0 #999999;
 }
 
 #container {
@@ -230,9 +230,6 @@ h1 {
 }
 
 #header span {
-	/*
-	font-family: "Droid Serif",Cambria,Georgia,Palatino,"Palatino Linotype","Myriad Pro",Serif;
-	*/
 	font-style:italic;
-	font-size:1.7em;
+	font-size:2.3em;
 }
