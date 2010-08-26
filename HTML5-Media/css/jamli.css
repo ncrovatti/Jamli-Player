@@ -37,6 +37,15 @@
 	opacity: 1;
 }
 
+.playOverlay {
+	background: #000 url(/medias/poster.png) scroll no-repeat center center;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	width: 100%;
+	cursor: pointer;
+}
+
 #audioVolumeSet .control {
 	margin-left: 0;
 }
@@ -84,7 +93,7 @@
 
 .mediaWaiter {
 	display: none;
-	float : right !important;
+	float: right !important;
 	background-position: 25% 50%;
 	background-repeat: no-repeat;
 	background-image:
@@ -122,7 +131,7 @@
 	padding: 3px;
 	position: absolute;
 	top: -20px;
-	z-index: 100;
+	z-index: 3;
 }
 
 .mediaLengthTimer {

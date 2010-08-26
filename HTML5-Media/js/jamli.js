@@ -25,6 +25,7 @@
  * Usage: 
  * 
  * window.Video1 = Jamli('video tag selector');
+ * Note to self : http://www.docuter.com/viewer.asp?document=2095543264be46c64807571273261156&html5_tutorial
  * */
 
 /*jslint plusplus: false, white: true, browser: true, devel: true, forin: true, onevar: true, undef: true, nomen: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, strict: true */
@@ -697,9 +698,9 @@
 			self.createControl('viewFullscreen');
 			self.createControl('mediaLengthTimer');
 			self.createControl('mediaWaiter');
+			
 			$('.mediaWaiter').css({display: 'none'});
-			
-			
+
 			for (; i <= 10; i++) {
 				audioVolumeSetElement = self.createControl('audioVolumeSet');
 				$(audioVolumeSetElement).attr('rel', i);
@@ -712,6 +713,22 @@
 			$('.audioVolumeSet').wrapAll(self.dom.createNode('div', {id: 'audioVolumeSet'}));
 
 			$('#jamli-controls').wrapAll(jamliElement);
+			
+			$('#jamli').after(self.dom.createNode('div', {'class' : 'playOverlay'}));
+			
+			$('.playOverlay').bind('click', function() {
+				$(this).css({display: 'none'});
+				$('.mediaPlaybackStart').trigger('click');
+			});
+			
+			$(self.media).css({'cursor': 'pointer'}).bind('click', function() {
+				if (self.media.paused === true) {
+					$('.mediaPlaybackStart').trigger('click');
+					return true;
+				}
+				
+				$('.mediaPlaybackPause').trigger('click');
+			});
 			
 			self.dom.append(jamliElement, self.dom.createNode('div', {'class' : 'shaded mediaLengthPopupTimer'}));
 			
@@ -761,7 +778,7 @@
 					});
 				}
 			}).bind('ended', function (e) {
-				console.log('waiting', e);
+				$('.mediaPlaybackPause').removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart');
 			}).bind('seeking', function (e) {
 				
 				$('.mediaWaiter').css({display: 'block'});
