@@ -12,33 +12,40 @@
 	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
 </head>
 <body>
-	<div id="container">
-		<div id="header">
-			<h1 class="tk-lobster">Jamli</h1>
-			<span class="tk-adobe-garamond-pro">the lightweight Javascript Media Library</span>
+	<div class="wrapper">
+		<div id="container">
+			<div id="header">
+				<h1 class="tk-lobster">Jamli</h1>
+				<span class="tk-adobe-garamond-pro">the lightweight Javascript Media Library</span>
+			</div>
+		  
+			<div id="body">
+				<video id="myVideo">
+				    <source class="src" src="http://static.moblur.org/jamli-player.appspot.com/medias/sintel_trailer-480p.mp4" type='video/mp4; codecs=avc1.42E01E, mp4a.40.2'>
+				    <source class="src" src="http://static.moblur.org/jamli-player.appspot.com/medias/sintel_trailer-480p.ogv" type='video/ogg; codecs=theora, vorbis'>
+				    <!-- 
+				    https://developer.mozilla.org/En/HTML/Element/Source
+				    Currently, only a small subset of the functionality is implemented—we will pick 
+				    the first source element that has a type of exactly "video/ogg" or "application/ogg". 
+				    ( bug 449363 [https://bugzilla.mozilla.org/show_bug.cgi?id=449363]) 
+					-->
+				     <source class="src" src="http://static.moblur.org/jamli-player.appspot.com/medias/sintel_trailer-480p.ogv" type="video/ogg">
+					Sorry, your browser is to old to support this kind of web app. :(
+				</video>
+			</div>
+			<div id="footer">
+			<p>
+			The video is the trailer for the upcoming <a href="http://durian.blender.org/">Durian Open Movie Project, Sintel</a>.  
+			by the <a href="http://www.blender.org/blenderorg/blender-foundation/">Blender Foundation</a>.
+			</p>
+			<p class="copyright">
+			© 2010 Nicolas Crovatti — Jamli Video Player Project (<a href="http://code.google.com/p/html5-media/source/checkout">source code</a>, <a href="http://code.google.com/p/html5-media/issues/list">issues</a>)
+			</p>
+			</div>
+	
 		</div>
-	  
-		<div id="body">
-			<video id="myVideo">
-			    <source class="src" src="http://static.moblur.org/jamli-player.appspot.com/medias/sintel_trailer-480p.mp4" type='video/mp4; codecs=avc1.42E01E, mp4a.40.2'>
-			    <source class="src" src="http://static.moblur.org/jamli-player.appspot.com/medias/sintel_trailer-480p.ogv" type='video/ogg; codecs=theora, vorbis'>
-			    <!-- 
-			    https://developer.mozilla.org/En/HTML/Element/Source
-			    Currently, only a small subset of the functionality is implemented—we will pick 
-			    the first source element that has a type of exactly "video/ogg" or "application/ogg". 
-			    ( bug 449363 [https://bugzilla.mozilla.org/show_bug.cgi?id=449363]) 
-				-->
-			     <source class="src" src="http://static.moblur.org/jamli-player.appspot.com/medias/sintel_trailer-480p.ogv" type="video/ogg">
-				Sorry, your browser is to old to support this kind of web app. :(
-			</video>
-		</div>
-		<div id="footer">
-		The video is the trailer for the upcoming <a href="http://durian.blender.org/">Durian Open Movie Project, Sintel</a>.  by the <a href="http://www.blender.org/blenderorg/blender-foundation/">Blender Foundation</a>.
-		</div>
-
+	
+		<script src="js/jamli.js"></script>
 	</div>
-
-	<script src="js/jamli.js"></script>
-
 </body>
 </html>

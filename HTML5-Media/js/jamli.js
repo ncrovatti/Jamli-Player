@@ -547,7 +547,7 @@
 		self.onmediaPlaybackStart = function (control) {
 			$('.playOverlay').css({display:'none'});
 			self.media.play();
-		console.log($('.src').nodes);
+		
 			$(control).removeClass('mediaPlaybackStart').addClass('mediaPlaybackPause').unbind('click').bind('click', function () {
 				self.onmediaPlaybackPause(control);
 			});
@@ -677,7 +677,7 @@
 				</videoWrapper>
 			 * */
 			var 
-				jamliElement					= self.dom.createNode('div', {id: 'jamli', 'class': 'shaded'}),
+				jamliElement					= self.dom.createNode('div', {id: 'jamli'}),
 				currentPositionElement			= self.dom.createNode('div', {'class' : 'mediaCurrentPosition'}),
 				currentLoadedElement			= self.dom.createNode('div', {'class' : 'mediaCurrentLoadedData'}),
 				jamliControlsElement			= self.dom.createNode('div', {id : 'jamli-controls'}),
