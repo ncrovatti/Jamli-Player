@@ -547,7 +547,7 @@
 		self.onmediaPlaybackStart = function (control) {
 			$('.playOverlay').css({display:'none'});
 			self.media.play();
-			
+		console.log($('.src').nodes);
 			$(control).removeClass('mediaPlaybackStart').addClass('mediaPlaybackPause').unbind('click').bind('click', function () {
 				self.onmediaPlaybackPause(control);
 			});
@@ -789,6 +789,9 @@
 			}).bind('seeked', function (e) {
 				$('.mediaWaiter').css({display: 'none'});
 				$('.mediaPlaybackStart').trigger('click');
+			}).bind('canplay', function(e) {
+				
+			 // $('.mediaPlaybackStart').trigger('click');
 			});
 		
 			return true;
