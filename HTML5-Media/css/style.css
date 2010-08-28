@@ -315,6 +315,7 @@ body {
 	font-weight: bold;
 	margin-bottom: 20px;
 	text-shadow:1px 1px 0 rgba(255, 255, 255, 0.2);
+	position:relative;
 }
 
 #footer {
@@ -333,23 +334,32 @@ h1,h2,h3,h4,h6 {
 		Georgia, serif;
 	font-family: "Droid Serif", Cambria, Georgia, Palatino,
 		"Palatino Linotype", "Myriad Pro", Serif;
-	font-style: italic;
 }
 
 h1 {
-	color: rgba(0, 0, 0, 0.6);
-	font-size: 4.3em;
-	font-weight: bold;
-	line-height: 1em;
-	margin: 0 -4px;
+	color:rgba(0, 0, 0, 0.6);
+	font-size:15em;
+	font-weight:bold;
+	line-height:1em;
+	margin:-16px 0;
 }
 
 #header span {
-	font-style: italic;
-	font-size: 2.3em;
+	float:right;
+	font-size:2.3em;
+	font-style:italic;
 }
 
 .copyright {
 	font-weight:normal;
 	font-style:italic;
+}
+
+.badge {
+	background:url("/medias/badge.png") no-repeat scroll left top transparent;
+	height:140px;
+	position:absolute;
+	right:0;
+	top:0px;
+	width:140px;
 }
