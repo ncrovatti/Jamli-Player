@@ -684,7 +684,7 @@
 				mediaSeekBarCenterElement		= self.dom.createNode('div', {'class' : 'mediaSeekBarCenter'}),
 				i = 0, audioVolumeSetElement;
 			
-			$(selector).wrapAll(self.dom.createNode('div', {id: 'videoWrapper'}));
+			//$(selector).wrapAll(self.dom.createNode('div', {id: 'videoWrapper'}));
 			
 			
 			self.dom.append(mediaSeekBarCenterElement, currentPositionElement);
