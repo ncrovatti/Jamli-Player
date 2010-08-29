@@ -481,7 +481,11 @@
 		self.isUpdatingSeekBar = false;
 		self.dom = window.selfDOM();
 		self.defaultVolume = 3;
-	
+		self.isAppleMobile = function() {
+			var ua = navigator.userAgent;
+			return ua.match(/iPhone/i) || ua.match(/iPad/i);
+		}();
+		
 		self.createControl = function (k) {
 			var control = self.dom.append(self.dom.getById('jamli-controls'), self.dom.createNode('span'));
 			
@@ -684,7 +688,10 @@
 				mediaSeekBarCenterElement		= self.dom.createNode('div', {'class' : 'mediaSeekBarCenter'}),
 				i = 0, audioVolumeSetElement;
 			
-			//$(selector).wrapAll(self.dom.createNode('div', {id: 'videoWrapper'}));
+			if (!self.isAppleMobile) {
+				$(selector).wrapAll(self.dom.createNode('div', {id: 'videoWrapper'}));				
+			}
+
 			
 			
 			self.dom.append(mediaSeekBarCenterElement, currentPositionElement);
@@ -804,10 +811,9 @@
 }(window, document));
 
 var onReady = function () {
-	var ua = navigator.userAgent;
+
 	window.videoElement = window.Jamli('#myVideo');
-	
-	if(ua.match(/iPhone/i) || ua.match(/iPad/i)) {
+	if(window.videoElement.isAppleMobile) {
 		$('.playOverlay').css({display:'none'});
 		$('#jamli').css({display:'none'});
 	}
