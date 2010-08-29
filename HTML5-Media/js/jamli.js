@@ -804,7 +804,14 @@
 }(window, document));
 
 var onReady = function () {
+	var ua = navigator.userAgent;
 	window.videoElement = window.Jamli('#myVideo');
+	
+	if(ua.match(/iPhone/i) || ua.match(/iPad/i)) {
+		$('.playOverlay').css({display:'none'});
+		$('#jamli').css({display:'none'});
+	}
+
 };
 
 if (document.addEventListener) {
