@@ -299,6 +299,10 @@ a:link {
 	html {
 		-webkit-text-size-adjust: none;
 	} /* Prevent iPhone from adjusting font size */
+	
+	h1, h1 span {
+		font-style:italic;
+	}
 }
 
 .wrapper {
