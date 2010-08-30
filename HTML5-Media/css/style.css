@@ -156,7 +156,6 @@ p {
 	margin: 15px 0 10px;
 }
 
-
 a,a:active,a:visited {
 	color: #222;
 }
@@ -299,38 +298,35 @@ a:link {
 	html {
 		-webkit-text-size-adjust: none;
 	} /* Prevent iPhone from adjusting font size */
-	
-	h1, h1 span {
-		font-style:italic;
+	h1,h1 span {
+		font-style: italic;
 	}
 }
 
 .wrapper {
-	-moz-border-radius:20px;
-	-webkit-border-radius:20px;
-	border-radius:20px;
-
-	-moz-box-shadow:20px 0 0 rgba(0, 0, 0, 0.5);
-	-webkit-box-shadow:20px 0 0 rgba(0, 0, 0, 0.5);
-	box-shadow:20px 0 0 rgba(0, 0, 0, 0.5);
-
-	background-color:rgba(0, 0, 0, 0.3);
-	border:20px solid rgba(0, 0, 0, 0.1);
-	margin:0 auto;
-	padding:20px;
-	width:960px;
+	-moz-border-radius: 20px;
+	-webkit-border-radius: 20px;
+	border-radius: 20px;
+	-moz-box-shadow: 20px 0 0 rgba(0, 0, 0, 0.5);
+	-webkit-box-shadow: 20px 0 0 rgba(0, 0, 0, 0.5);
+	box-shadow: 20px 0 0 rgba(0, 0, 0, 0.5);
+	background-color: rgba(0, 0, 0, 0.3);
+	border: 20px solid rgba(0, 0, 0, 0.1);
+	margin: 0 auto;
+	padding: 20px;
+	width: 960px;
 }
 
 body {
-	color:rgba(0, 0, 0, 0.6);
+	color: rgba(0, 0, 0, 0.6);
 	background: url(/medias/bg.gif) repeat scroll 0 0 transparent
 }
 
 #header,#footer {
 	font-weight: bold;
 	margin-bottom: 20px;
-	text-shadow:1px 1px 0 rgba(255, 255, 255, 0.2);
-	position:relative;
+	text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.2);
+	position: relative;
 }
 
 #footer {
@@ -338,7 +334,7 @@ body {
 }
 
 #container {
-	width: 720px; /*960px;*/
+	width: 854px;
 	margin: 20px auto 0;
 }
 
@@ -351,29 +347,36 @@ h1,h2,h3,h4,h6 {
 }
 
 h1 {
-	color:rgba(0, 0, 0, 0.6);
-	font-size:15em;
-	font-weight:bold;
-	line-height:1em;
-	margin:-16px 0;
+	color: #3F3F3F;
+	font-size: 15em;
+	font-weight: bold;
+	letter-spacing: -8px;
+	line-height: 1em;
+	margin: -16px 0;
 }
 
 #header span {
-	float:right;
-	font-size:2.3em;
-	font-style:italic;
+	float: right;
+	font-size: 2.3em;
+	font-style: italic;
 }
 
 .copyright {
-	font-weight:normal;
-	font-style:italic;
+	background: url("/medias/logo.png") no-repeat scroll left top
+		transparent;
+	font-style: italic;
+	font-weight: normal;
+	line-height: 26px;
+	padding-left: 32px;
 }
 
+}
 .badge {
-	background:url("/medias/badge.png") no-repeat scroll left top transparent;
-	height:140px;
-	position:absolute;
-	right:0;
-	top:0px;
-	width:140px;
+	background: url("/medias/badge.png") no-repeat scroll left top
+		transparent;
+	height: 140px;
+	position: absolute;
+	right: 0;
+	top: 0px;
+	width: 140px;
 }

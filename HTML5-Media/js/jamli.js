@@ -811,9 +811,8 @@
 }(window, document));
 
 var onReady = function () {
-
 	window.videoElement = window.Jamli('#myVideo');
-	if(window.videoElement.isAppleMobile) {
+	if(window.videoElement.isAppleMobile || !document.createElement('video').canPlayType) {
 		$('.playOverlay').css({display:'none'});
 		$('#jamli').css({display:'none'});
 	}
