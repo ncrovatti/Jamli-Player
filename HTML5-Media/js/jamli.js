@@ -816,7 +816,6 @@ var onReady = function () {
 		$('.playOverlay').css({display:'none'});
 		$('#jamli').css({display:'none'});
 	}
-
 };
 
 if (document.addEventListener) {
