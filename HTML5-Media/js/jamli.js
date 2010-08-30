@@ -778,11 +778,17 @@
 				$('.mediaLengthTimer').text(self.getNiceTimeAndDuration());
 				
 			}).bind('progress', function (e) {
+				var buffered = 0;
+				
 				if (e.lengthComputable === true) {
-					$('.mediaCurrentLoadedData').css({
-						width : (e.loaded / e.total) * 100 + '%'
-					});
+					buffered = (e.loaded / e.total) * 100 + '%';
+				} 
+				else {
+					buffered = (self.media.buffered.end() / self.media.duration) * 100 + '%';
 				}
+				
+				$('.mediaCurrentLoadedData').css({width : buffered});
+				
 			}).bind('ended', function (e) {
 				$('.mediaPlaybackPause').removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart');
 			}).bind('seeking', function (e) {
