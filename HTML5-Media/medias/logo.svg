@@ -22,6 +22,18 @@
   <defs
      id="defs4">
     <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4891">
+      <stop
+         style="stop-color:#ffb380;stop-opacity:1;"
+         offset="0"
+         id="stop4893" />
+      <stop
+         style="stop-color:#ffb380;stop-opacity:0;"
+         offset="1"
+         id="stop4895" />
+    </linearGradient>
+    <linearGradient
        id="linearGradient3368">
       <stop
          style="stop-color:#f30000;stop-opacity:1;"
@@ -57,7 +69,27 @@
        y2="273.10147"
        gradientUnits="userSpaceOnUse"
        spreadMethod="pad"
-       gradientTransform="matrix(2.0459147,0,0,1.0317662,45.070266,-151.41905)" />
+       gradientTransform="matrix(1.7047807,0,0,1.0358347,57.020299,-152.88852)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4891"
+       id="linearGradient4897"
+       x1="153.7364"
+       y1="536.64789"
+       x2="276.04391"
+       y2="536.64789"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4891"
+       id="radialGradient4903"
+       cx="189.62053"
+       cy="549.33807"
+       fx="189.62053"
+       fy="549.33807"
+       r="59.65625"
+       gradientTransform="matrix(0.953355,-0.3592003,0.4219638,1.1199356,-222.95593,5.9733089)"
+       gradientUnits="userSpaceOnUse" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -66,9 +98,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="348.97806"
-     inkscape:cy="722.16157"
+     inkscape:zoom="0.7"
+     inkscape:cx="230.46659"
+     inkscape:cy="473.20948"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -86,6 +118,10 @@
        orientation="0,1"
        position="626.29458,1114.1983"
        id="guide3177" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="271.07143,513.21429"
+       id="guide4863" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -104,8 +140,8 @@
      id="layer1"
      style="display:inline">
     <path
-       style="font-size:75.32996368px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:url(#linearGradient3390);fill-opacity:1;stroke:#000000;stroke-width:9.99746799;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;display:inline;font-family:DejaVu Serif;-inkscape-font-specification:DejaVu Serif"
-       d="M 275.74717,328.99339 C 254.76842,328.99338 162.7505,330.62714 147.16649,327.80589 C 61.016747,315.86076 199.80556,291.30112 224.87632,285.96235 C 234.86599,285.96238 243.15754,285.00517 249.75099,283.09071 C 256.34407,281.17634 242.64676,280.68695 247.04248,277.56339 C 251.43779,274.33918 257.86459,268.63194 260.26236,264.5008 C 262.85951,260.269 274.14805,225.44252 275.94643,220.90832 L 289.51016,170.25573 L 297.21418,147.9305 L 311.41083,113.01771 L 483.7352,113.01771 L 425.89414,262.03942 C 421.69814,273.02214 415.80414,282.69494 408.21215,291.05785 C 400.61962,299.32007 390.82961,306.27239 378.84209,311.91484 C 366.85409,317.55733 352.36885,321.83955 335.38639,324.76154 C 318.6033,327.58279 298.72359,328.99338 275.74717,328.99339"
+       style="font-size:75.32996368px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:url(#linearGradient3390);fill-opacity:1;stroke:#000000;stroke-width:9.14397621;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;display:inline;font-family:DejaVu Serif;-inkscape-font-specification:DejaVu Serif"
+       d="M 249.23435,329.41828 C 231.75357,329.41827 155.07864,331.05847 142.09309,328.2261 C 70.307879,316.23387 185.95517,291.57738 206.84566,286.21756 C 215.16966,286.21759 222.07868,285.25661 227.57275,283.3346 C 233.0665,281.41268 221.65307,280.92136 225.31585,277.78548 C 228.97829,274.54856 234.33349,268.81881 236.33146,264.67138 C 238.49556,260.4229 247.90186,225.45909 249.40038,220.90701 L 260.70251,170.05469 L 267.12197,147.64142 L 278.95148,112.59096 L 422.54264,112.59096 L 374.34595,262.2003 C 370.84958,273.22632 365.93834,282.93727 359.61224,291.33315 C 353.28568,299.62795 345.12804,306.60769 335.13931,312.27239 C 325.15018,317.93713 313.0802,322.23623 298.92938,325.16974 C 284.94468,328.00212 268.3797,329.41827 249.23435,329.41828"
        id="flowRoot3359"
        sodipodi:nodetypes="cccscccccccccscc" />
     <path
