@@ -11,6 +11,23 @@
 
 	<script type="text/javascript" src="http://use.typekit.com/gye6stc.js"></script>
 	<script type="text/javascript">try{if(!navigator.userAgent.match(/Epiphany/i)) {Typekit.load();}}catch(e){}</script>
+	<script type="text/javascript">
+	var onReady = function () {
+		window.videoElement = window.Jamli('#myVideo');
+		if(window.videoElement.isAppleMobile || !document.createElement('video').canPlayType) {
+			$('.playOverlay').css({display:'none'});
+			$('#jamli').css({display:'none'});
+		}
+	};
+
+	if (document.addEventListener) {
+		document.addEventListener("DOMContentLoaded", onReady, false);
+	} 
+	else if (document.attachEvent) {
+		document.attachEvent("onreadystatechange", onReady);
+	}
+		
+	</script>
 </head>
 <body>
 	<div class="wrapper">
@@ -61,7 +78,7 @@
 		<script src="js/jamli.js"></script>
 	</div>
 <script>
-if (videoElement.isAppleMobile) {
+if (window.videoElement.isAppleMobile) {
 	$('.typekit-badge').css({display:'none'});
 }
 
