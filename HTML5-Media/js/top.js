@@ -15,5 +15,4 @@
 /*global window, document, $ */
 "use strict";
 
-(function (window, document) {
-	
+(function (window, document, undefined) {
