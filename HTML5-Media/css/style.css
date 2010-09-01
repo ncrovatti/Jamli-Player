@@ -359,7 +359,7 @@ h1 {
 	float: right;
 	font-size: 2.3em;
 	font-style: italic;
-	white-space:nowrap;
+	white-space: nowrap;
 }
 
 .copyright {
@@ -371,7 +371,6 @@ h1 {
 	padding-left: 32px;
 }
 
-
 .badge {
 	background: url("/medias/badge.png") no-repeat scroll left top
 		transparent;
@@ -380,4 +379,27 @@ h1 {
 	right: 0;
 	top: 0px;
 	width: 140px;
+}
+
+#cta-wrap {
+	text-align: center;
+}
+
+.cta {
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	background: url("http://onehub.com/images/bg_button.png") repeat-x
+		scroll center bottom #D93300;
+	border: 1px solid #DDDDDD;
+	color: #DDDDDD;
+	cursor: pointer;
+	display: inline-block;
+	font-size: 100%;
+	font-weight: bold;
+	line-height: 47px;
+	padding: 0 15px;
+	text-decoration: none;
+	text-transform: uppercase;
+	margin:1.5em;
 }
