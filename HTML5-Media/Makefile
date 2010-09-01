@@ -10,7 +10,7 @@ UPLOAD		= ${PREFIX}/build/google_upload.py
 
 RMFLAGS		= -rfv
 MKDIRLAGS	= -vp
-CPLAGS		= -v
+CPFLAGS		= -v
 
 SRC_DIR		= ${PREFIX}/js
 RELEASE_DIR	= ${PREFIX}/release
@@ -34,6 +34,7 @@ D_REV		= `export LANG=C; svn info . | grep Revision: | sed 's/.*: //g'`
 REV			= sed s/@REVISION/${D_REV}/
 
 J			= $(DIST_DIR)/jamli-$(D_VER).js
+J_LATEST	= $(DIST_DIR)/jamli-latest.js
 J_MIN		= $(DIST_DIR)/jamli-$(D_VER).min.js
 J_COMP		= $(DIST_DIR)/jamli-$(D_VER).comp.js
 
@@ -43,7 +44,7 @@ all: dependencies jamli | minify compile
 
 dependencies: directories
 	@@echo "⚙ Fetching external dependency."
-	@@wget -qO $(SRC_DIR)/dsign.js "http://dsign.googlecode.com/svn/trunk/src/dsign.js"
+	@@wget --no-cache -qO $(SRC_DIR)/dsign.js "http://dsign.googlecode.com/svn/trunk/src/dsign.js"
 	@@cat ${SRC_DIR}/selfdom-declaration.js >> ${SRC_DIR}/dsign.js
 	@@cat ${SRC_DIR}/dsign.js | grep -v window.dSign > ${SRC_DIR}/selfdom.js
 	@@echo "↳ External dependency met."
@@ -55,6 +56,7 @@ jamli:
 			sed 's/\/\*jslint.*$$//' | \
 			sed 's/\/\*global.*$$//' | \
 			${YEAR} | ${VER} > ${J}
+	@@cp $(CPFLAGS) ${J} $(J_LATEST)
 	@@echo "↳ Jamli is ready for further operations."
 	
 clean: 
