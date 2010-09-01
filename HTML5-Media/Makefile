@@ -49,7 +49,7 @@ dependencies: directories
 	@@cat ${SRC_DIR}/dsign.js | grep -v window.dSign > ${SRC_DIR}/selfdom.js
 	@@echo "↳ External dependency met."
       
-jamli: 
+jamli: dependencies
 	@@echo "⚙ Building Jamli main file ..."
 	
 	@@cat ${MODULES} | sed 's/@DATE/Date: '"${DATE}"'/' | \

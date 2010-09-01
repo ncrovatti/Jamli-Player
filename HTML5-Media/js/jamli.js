@@ -164,15 +164,15 @@ window.Jamli = window.Jamli || function (selector) {
 	self.formatTime = function (seconds) {
 		seconds = Math.round(seconds);
 		
-		var a = [
+		var time = [
 			parseInt((seconds / 60) / 60, 10),
 			parseInt(seconds / 60, 10),
 			parseInt(seconds % 60, 10)
 		];
 		
-		a.map(self.addLeadingZeroes);
+		time.map(self.addLeadingZeroes);
 
-		return a.join(':');
+		return time.join(':');
 	};
 	
 	self.getNiceTimeAndDuration = function () {
