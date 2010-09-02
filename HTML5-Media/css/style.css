@@ -88,8 +88,8 @@ refer to http://developer.yahoo.com/yui/fonts/ for font sizing
 */
 body {
 	font: 13px arial, helvetica, "Nimbus Sans L", "Bitstream Vera Sans",
-		sans-serif; *
-	font-size: small; *
+		sans-serif;
+	font-size: small;
 	font: x-small;
 	line-height: 1.22em;
 }
@@ -319,7 +319,8 @@ a:link {
 
 body {
 	color: rgba(0, 0, 0, 0.6);
-	background: url(/medias/bg.gif) repeat scroll 0 0 transparent
+	background: url(/medias/bg.gif) repeat scroll 0 0 transparent;
+	font-family: DejaVu Sans, Bitstream Vera Sans, Segoe UI, Lucida Grande, Verdana, Tahoma, Arial, sans-serif;
 }
 
 #header,#footer {
@@ -338,10 +339,7 @@ body {
 	margin: 20px auto 0;
 }
 
-h1,h2,h3,h4,h6 {
-	font-family: Constantia, "Lucida Bright", Lucidabright, "Lucida Serif",
-		Lucida, "DejaVu Serif," "Bitstream Vera Serif", "Liberation Serif",
-		Georgia, serif;
+h1,h2 {
 	font-family: "Droid Serif", Cambria, Georgia, Palatino,
 		"Palatino Linotype", "Myriad Pro", Serif;
 }
@@ -362,13 +360,17 @@ h1 {
 	white-space: nowrap;
 }
 
+.dsign-logo {
+
+}
+
+.jamli-logo {
+	width : 32px;
+}
+
 .copyright {
-	background: url("/medias/logo.png") no-repeat scroll left top
-		transparent;
 	font-style: italic;
 	font-weight: normal;
-	line-height: 26px;
-	padding-left: 32px;
 }
 
 .badge {
@@ -385,14 +387,20 @@ h1 {
 	text-align: center;
 }
 
+.cta, .cta-border {
+	-moz-border-radius: 20px;
+	-webkit-border-radius: 20px;
+	border-radius: 20px;
+}
+
+.cta span {
+	font-size:0.5em;
+}
+
 .cta {
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
-	background: url("http://onehub.com/images/bg_button.png") repeat-x
-		scroll center bottom #D93300;
+	text-shadow:1px 1px 0 rgba(255, 255, 255, 0.2);
+	background: url("/medias/cta-bg.png") repeat scroll 0 0 #FFFFDD;
 	border: 1px solid #DDDDDD;
-	color: #DDDDDD;
 	cursor: pointer;
 	display: inline-block;
 	font-size: 100%;
@@ -402,4 +410,15 @@ h1 {
 	text-decoration: none;
 	text-transform: uppercase;
 	margin:1.5em;
+}
+
+img {
+	vertical-align:middle;
+}
+
+
+.cta-border {
+	background-color:rgba(0, 0, 0, 0.6);
+	border:1px solid #DDDDDD;
+	display:inline-block;
 }

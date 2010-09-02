@@ -1,0 +1,33 @@
+                       Jamli Player - v@VERSION 
+
+http://code.google.com/p/html5-media/
+
+Copyright (c) @YEAR, Nicolas Crovatti
+Released under the MIT License.
+
+@DATE
+--------------------------------------------------------------------------------
+
+Jamli player is a simple yet effective HTML5 media player written in Javascript.
+
+It supports the following modes in a gracefull degradation mode.
+
+Features:  
+	HTML5 Javascript player 
+	Flash player fallback
+	Apple Mobile devices support (iPhone & iPad)
+	 
+
+
+Build targets:
+	make          : Complete release build (Compiled, Minified and Source 
+                    with assets)
+	
+	make archive  : Creates a tarball of a complete release ready to distribute. 
+	
+	make clean    : Removes all build directories.
+
+--------------------------------------------------------------------------------
+Contact: nicolas.crovatti@goooooooooooooooooooooooooglemail.com 
+(remove "ooooooooooooooooooooooo" in the email to reach me)
+--------------------------------------------------------------------------------
