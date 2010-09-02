@@ -113,7 +113,6 @@ index: jamli archive
 			
 archive: jamli | minify compile readme
 	@@echo "⚙ Creating tarball"
-	@@rm $(RMFLAGS) $(J_LATEST)
 	@@cp $(CPFLAGS) $(SRC_DIR)/LICENSE $(RELEASE_DIR)/
 	@@cp $(CPFLAGS) $(DIST_DIR)/* $(RELEASE_DIR)/
 	@@cp $(CPFLAGS) $(BIN_DIR)/* $(RELEASE_DIR)/bin
