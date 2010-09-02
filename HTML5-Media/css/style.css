@@ -394,21 +394,20 @@ h1 {
 }
 
 .cta span {
-	font-size:0.5em;
+	font-size:10px;
 }
 
 .cta {
-	text-shadow:1px 1px 0 rgba(255, 255, 255, 0.2);
+	text-shadow:1px 1px 0 rgba(255, 255, 255, 0.6);
 	background: url("/medias/cta-bg.png") repeat scroll 0 0 #FFFFDD;
 	border: 1px solid #DDDDDD;
 	cursor: pointer;
 	display: inline-block;
-	font-size: 100%;
+	font-size:120%;
 	font-weight: bold;
 	line-height: 47px;
 	padding: 0 15px;
 	text-decoration: none;
-	text-transform: uppercase;
 	margin:1.5em;
 }
 
