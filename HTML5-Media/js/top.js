@@ -14,5 +14,3 @@
 /*jslint plusplus: false, white: true, browser: true, devel: true, forin: true, onevar: true, undef: true, nomen: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, strict: true */
 /*global window, document, $ */
 "use strict";
-
-(function (window, document, undefined) {

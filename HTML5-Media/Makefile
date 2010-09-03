@@ -18,13 +18,10 @@ CSS_DIR		= ${PREFIX}/css
 RELEASE_DIR	= ${PREFIX}/release
 DIST_DIR	= ${PREFIX}/dist
 
-
+HEADER		= ${SRC_DIR}/top.js
+ 
 BASE_FILES	= ${SRC_DIR}/selfdom.js \
 				${SRC_DIR}/jamli.js 
-
-MODULES		= ${SRC_DIR}/top.js \
-				${BASE_FILES} \
-				${SRC_DIR}/bottom.js
 
 INDEX		= index.html
 
@@ -64,12 +61,13 @@ dependencies: directories
 
 jamli: dependencies
 	@@echo "⚙ Building Jamli main file ..."
-	
-	@@cat ${MODULES} | sed 's/@DATE/Date: '"${DATE}"'/' | \
+	@@cat $(HEADER) | ${YEAR} | ${VER} | \
 			sed 's/\/\*jslint.*$$//' | \
-			sed 's/\/\*global.*$$//' | \
-			${YEAR} | ${VER} > ${J}
-	@@cp $(CPFLAGS) ${J} $(J_LATEST)
+			sed 's/\/\*global.*$$//' > $(J)
+	@@echo "(function (window, undefined) {" >> $(J)
+	@@cat $(BASE_FILES) | sed 's/@DATE/Date: '"${DATE}"'/' >> $(J)
+	@@echo "})(window);" >> $(J)
+	@@cp $(CPFLAGS) $(J) $(J_LATEST)
 	@@echo "↳ Jamli is ready for further operations."
 	
 clean: 
