@@ -1,7 +1,8 @@
 
 window.Jamli = window.Jamli || function (selector) {
 	var self = {};
-
+	
+	
 	self.media = $(selector).nodes[0];
 	self.isFullScreen = false;
 	self.isCursorOverVolumeSet = false;
@@ -13,6 +14,54 @@ window.Jamli = window.Jamli || function (selector) {
 		var ua = navigator.userAgent;
 		return ua.match(/iPhone/i) || ua.match(/iPad/i);
 	}();
+	
+	self.keyPressHandler = function(e) {
+		e = e || window.event;
+	
+		switch (e.charCode) {
+			case 32:
+				if (self.media.paused === true) {
+					$('.mediaPlaybackStart').trigger('click');
+					return false;
+				}
+				
+				$('.mediaPlaybackPause').trigger('click');
+				return false;
+				break;
+			case 43:
+				if(self.media.volume === 1) {
+					return false;
+				}
+				
+				self.media.muted = false;
+				
+				if (self.media.volume + 0.1 < 1) {
+					self.media.volume += 0.1;
+				} 
+				else {
+					self.media.volume = 1;
+				}
+				return false;
+			break;
+			case 45:
+				if(self.media.volume === 0) {
+					return false;
+				}
+				
+				if (self.media.volume - 0.1 > 0) {
+					self.media.volume -= 0.1;
+				} 
+				else {
+					self.media.volume = 0;
+					self.media.muted = true;
+				}
+				return false;
+			break;
+			default:
+			break;
+		}
+
+	};
 	
 	self.createControl = function (k) {
 		var control = self.dom.append(self.dom.getById('jamli-controls'), self.dom.createNode('span'));
@@ -48,16 +97,19 @@ window.Jamli = window.Jamli || function (selector) {
 		self.onaudioVolume(control);
 	};
 	
-	self.onaudioVolumeSet = function (control) {
-		self.media.volume = parseInt($(control).attr('rel'), 10) / 10;
-		
+	
+	self.updateVolumeInterface = function () {
 		$('.audioVolumeSet').removeClass('audioVolumeSetLower').each(function () {
 			if (parseInt($(this.node).attr('rel'), 10) <= Math.round(self.media.volume * 10)) {
 				$(this.node).addClass('audioVolumeSetLower');
 			}
 		});
 		
-		$('.volumeController').attr('class', self.getVolumeClasses());
+		$('.volumeController').attr('class', self.getVolumeClasses());	
+	};
+	
+	self.onaudioVolumeSet = function (control) {
+		self.media.volume = parseInt($(control).attr('rel'), 10) / 10;
 	};
 	
 	
@@ -214,14 +266,12 @@ window.Jamli = window.Jamli || function (selector) {
 			currentLoadedElement			= self.dom.createNode('div', {'class' : 'mediaCurrentLoadedData'}),
 			jamliControlsElement			= self.dom.createNode('div', {id : 'jamli-controls'}),
 			mediaSeekBarCenterElement		= self.dom.createNode('div', {'class' : 'mediaSeekBarCenter'}),
-			i = 0, audioVolumeSetElement;
+			i = 1, audioVolumeSetElement;
 		
 		if (!self.isAppleMobile) {
 			$(selector).wrapAll(self.dom.createNode('div', {id: 'videoWrapper'}));				
 		}
 
-		
-		
 		self.dom.append(mediaSeekBarCenterElement, currentPositionElement);
 		self.dom.append(mediaSeekBarCenterElement, currentLoadedElement);
 		
@@ -230,7 +280,7 @@ window.Jamli = window.Jamli || function (selector) {
 		$(selector).after(jamliControlsElement);
 		
 		self.createControl('mediaPlaybackStart');
-		self.createControl(self.getVolumeClass());
+		self.createControl(self.getVolumeClasses());
 		self.createControl('viewFullscreen');
 		self.createControl('mediaLengthTimer');
 		self.createControl('mediaWaiter');
@@ -328,8 +378,11 @@ window.Jamli = window.Jamli || function (selector) {
 		}).bind('canplay', function(e) {
 			
 		 // $('.mediaPlaybackStart').trigger('click');
+		}).bind('volumechange', function(e){
+			self.updateVolumeInterface();
 		});
-	
+		
+		document.onkeypress = self.keyPressHandler;
 		return true;
 	}());
 
