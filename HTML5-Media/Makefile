@@ -44,7 +44,7 @@ J_LATEST	= $(DIST_DIR)/jamli-latest.js
 J_MIN		= $(DIST_DIR)/jamli-$(D_VER).min.js
 J_COMP		= $(DIST_DIR)/jamli-$(D_VER).comp.js
 
-ARCHIVE		= jamli-v$(D_VER).tar.gz
+ARCHIVE		= jamli-$(D_VER).tar.gz
 
 FILTER_SIZE	= sed 's/\(.*\)\s*total/\1/' | \
 				tail -n 1 | tr -d "\n\t" | \
