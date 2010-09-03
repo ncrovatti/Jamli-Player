@@ -171,8 +171,6 @@ video {
 		;
 	background-repeat: repeat-x;
 	background-position: top left;
-	border-left: 1px solid #555753;
-	border-right: 1px solid #555753;
 	height: 13px;
 	position: relative;
 }
@@ -200,4 +198,6 @@ video {
 
 .mediaSeekBarCenter {
 	margin-bottom: 5px;
+	border-left: 1px solid #555753;
+	border-right: 1px solid #555753;
 }
