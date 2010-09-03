@@ -325,7 +325,6 @@ window.Jamli = window.Jamli || function (selector) {
 			
 		}).bind('waiting', function (e) {
 			
-			console.log('waiting', e);
 			
 		}).bind('seeked', function (e) {
 			$('.mediaWaiter').css({display: 'none'});
