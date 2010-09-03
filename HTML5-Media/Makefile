@@ -1,6 +1,18 @@
 SHELL		= /bin/sh
 export LANG = C
 
+UNAME		= $(shell uname)
+
+ifeq ($(UNAME), Linux)
+	DUFLAGS = --apparent-size -hc
+	WGET	= wget --no-cache -qO
+endif
+
+ifeq ($(UNAME), Darwin)
+	DUFLAGS = -hc
+	WGET	= curl -o
+endif
+
 PREFIX		= `pwd`
 
 COMPILE		= ${PREFIX}/build/compile.py
@@ -54,7 +66,7 @@ all: dependencies jamli | minify compile
 
 dependencies: directories
 	@@echo "⚙ Fetching external dependency."
-	@@wget --no-cache -qO $(SRC_DIR)/dsign.js "http://dsign.googlecode.com/svn/trunk/src/dsign.js"
+	@@$(WGET) $(SRC_DIR)/dsign.js "http://dsign.googlecode.com/svn/trunk/src/dsign.js"
 	@@cat ${SRC_DIR}/selfdom-declaration.js >> ${SRC_DIR}/dsign.js
 	@@cat ${SRC_DIR}/dsign.js | grep -v window.dSign > ${SRC_DIR}/selfdom.js
 	@@echo "↳ External dependency met."
@@ -106,7 +118,7 @@ index: jamli archive
 	@@echo "⚙ Creating index.html"
 	@@cat $(PREFIX)/$(INDEX) | $(VER) | \
 		sed 's/@archive_target/'"$(ARCHIVE)"'/' | \
-		sed 's/@archive_size/'"$(shell du --apparent-size -hc $(DIST_DIR)/$(ARCHIVE) | ${FILTER_SIZE})"'/' > $(DIST_DIR)/$(INDEX)
+		sed 's/@archive_size/'"$(shell du $(DUFLAGS) $(DIST_DIR)/$(ARCHIVE) | ${FILTER_SIZE})"'/' > $(DIST_DIR)/$(INDEX)
 	@@echo "↳ $(DIST_DIR)/$(INDEX) created."
 			
 archive: jamli | minify compile readme
