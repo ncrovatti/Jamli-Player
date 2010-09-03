@@ -160,9 +160,10 @@ video {
 }
 
 .mediaLengthTimer {
-	float: right !important;
-	width: auto !important;
-	line-height: 22px;
+	float:right !important;
+	line-height:21px;
+	text-shadow:1px 1px 0 rgba(255, 255, 255, 0.6);
+	width:auto !important;
 }
 
 .mediaSeekBarCenter,.mediaCurrentPosition,.mediaCurrentLoadedData {
