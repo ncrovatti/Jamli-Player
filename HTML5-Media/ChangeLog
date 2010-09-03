@@ -1,0 +1,27 @@
+version 0.5 
+    * Features:
+        Keyboard controls:
+        . space to start/stop playback
+        . Numeric pad plus and minus to increase/decrease volume level
+		
+		Enhanced look and feel
+		
+    * Usability enhancements 
+      http://code.google.com/p/html5-media/issues/detail?id=9
+    
+        Fixed: Letting the video play to the end, did not quite bring the video 
+               position bar to the end. There was still a few pixel's width of 
+               white visible to the right of the blue bar.
+
+    * Bug fixes:
+        . Compatibility: map & filter Array methods unsupported by IE8.
+          http://code.google.com/p/html5-media/issues/detail?id=5
+		
+		. Use Strict usage lead to deprecation message.
+          http://code.google.com/p/html5-media/issues/detail?id=6
+          
+        . Array of NaNs returned on loadedmetadata event.
+          http://code.google.com/p/html5-media/issues/detail?id=7
+          
+        . Can not play the video more than once in Chrome 5
+          http://code.google.com/p/html5-media/issues/detail?id=8
