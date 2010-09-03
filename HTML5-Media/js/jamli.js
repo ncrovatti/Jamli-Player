@@ -162,7 +162,7 @@ window.Jamli = window.Jamli || function (selector) {
 	};
 	
 	self.formatTime = function (seconds) {
-		seconds = Math.round(seconds);
+		seconds = Math.round(seconds) || 0;
 		
 		var time = [
 			parseInt((seconds / 60) / 60, 10),
