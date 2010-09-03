@@ -28,19 +28,22 @@ video {
 }
 
 #jamli {
-	background-color: #CCCCCC;
-	height: 40px;
-	min-width: 340px;
-	overflow: visible;
-	padding: 1%;
-	position: relative;
-	z-index: 4;
+	background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAA8CAYAAACn8dD6AAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9oJAwoSMDNund8AAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAWklEQVQY052OMQ7DUAxCEYfN/dfwrDpD4p+26dTFQsI8UHdvlqQ/Tr9aDpGBS1VKDrvMqSIH5ApyKnKCXBnjyiKToZAxYBKsIhbqZ+KT/PbCFzTPkavt3sy4B6QlkOZ1d/faAAAAAElFTkSuQmCC") repeat scroll left bottom #FFFFDD;
+	min-width:340px;
+	padding:1%;
+	position:relative;
+	z-index:4;
+	margin-top:-3px;
 }
 
 .shaded {
 	-moz-box-shadow: 0 0 9px #000;
 	-webkit-box-shadow: 0 0 9px #000;
 	box-shadow: 0 0 9px #000;
+}
+
+#jamli-controls {
+	overflow:auto;
 }
 
 #jamli-controls .control {
@@ -53,6 +56,7 @@ video {
 }
 
 #jamli-controls .control:hover {
+	
 	opacity: 1;
 }
 
@@ -162,7 +166,7 @@ video {
 
 .mediaSeekBarCenter,.mediaCurrentPosition,.mediaCurrentLoadedData {
 	background-image:
-		url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAANCAYAAABo1wTyAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAAN1wAADdcBQiibeAAAAD1JREFUCNcFwcEJgEAQBMF2ZjdCOUzHJEX8CWIKcr+xirGtIUn0vDcCECzIMpKN5vxQVaOuRrYhSXxex/4DbGgS1M1ZNQ4AAAAASUVORK5CYII=")
+		url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAANCAYAAABo1wTyAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAAN1gAADdYBkG95nAAAAAd0SU1FB9oJAwwXAGxNJYQAAAAzSURBVAjXPcsxFQAgDEPB/6KCLokhpGOlGsoEy20HsJmZA1BaVSg2soMSI/uRBLq7/tgXhGwNn5lHPmcAAAAASUVORK5CYII=")
 		;
 	background-repeat: repeat-x;
 	background-position: top left;
