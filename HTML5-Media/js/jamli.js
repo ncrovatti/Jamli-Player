@@ -268,11 +268,6 @@ window.Jamli = window.Jamli || function (selector) {
 		self.dom.append(jamliElement, self.dom.createNode('div', {'class' : 'shaded mediaLengthPopupTimer'}));
 		
 		$(self.media).bind('timeupdate', function () {
-			if (self.media.ended === true) {
-				$('.mediaPlaybackStop').trigger('click');
-				return true;
-			}
-			
 			if (self.isUpdatingSeekBar) {
 				return false;
 			}
@@ -319,6 +314,7 @@ window.Jamli = window.Jamli || function (selector) {
 			
 		}).bind('ended', function (e) {
 			$('.mediaPlaybackPause').removeClass('mediaPlaybackPause').addClass('mediaPlaybackStart');
+			
 		}).bind('seeking', function (e) {
 			
 			$('.mediaWaiter').css({display: 'block'});
