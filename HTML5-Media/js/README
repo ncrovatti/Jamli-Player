@@ -11,13 +11,12 @@ Released under the MIT License.
 Jamli player is a simple yet effective HTML5 media player written in Javascript.
 
 It supports the following modes in a gracefull degradation mode.
-
+	 
 Features:  
 	HTML5 Javascript player 
 	Flash player fallback
 	Apple Mobile devices support (iPhone & iPad)
-	 
-
+    Keyboard controls for playback and volume
 
 Build targets:
 	make          : Complete release build (Compiled, Minified and Source 
