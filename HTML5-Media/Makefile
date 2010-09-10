@@ -58,20 +58,22 @@ ARCHIVE		= jamli-$(D_VER).tar.gz
 FILTER_SIZE	= sed 's/\(.*\)\s*total/\1/' | \
 				tail -n 1 | tr -d "\n\t" | \
 				tr "[A-Z]" "[a-z]"
+				
+dependencies = ${SRC_DIR}/dsign.js
 
-
-all: dependencies jamli | minify compile
+all: $(dependencies) jamli | minify compile
 	@@echo "☛ Jamli Player v${D_VER} build complete."
 	@@echo
 
-dependencies: directories
+$(dependencies): directories
 	@@echo "⚙ Fetching external dependency."
 	@@$(WGET) $(SRC_DIR)/dsign.js "http://dsign.googlecode.com/svn/trunk/src/dsign.js"
 	@@cat ${SRC_DIR}/selfdom-declaration.js >> ${SRC_DIR}/dsign.js
 	@@cat ${SRC_DIR}/dsign.js | grep -v window.dSign > ${SRC_DIR}/selfdom.js
 	@@echo "↳ External dependency met."
 
-jamli: dependencies
+
+jamli:
 	@@echo "⚙ Building Jamli main file ..."
 	@@cat $(HEADER) | ${YEAR} | ${VER} | \
 			sed 's/\/\*jslint.*$$//' | \
@@ -129,31 +131,4 @@ archive: jamli | minify compile readme
 	@@cp $(CPFLAGS) $(CSS_DIR)/jamli.css $(RELEASE_DIR)/css
 	@@tar --create --file=$(DIST_DIR)/$(ARCHIVE) -C $(RELEASE_DIR) .
 	@@echo "↳ $(DIST_DIR)/$(ARCHIVE) created."
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	

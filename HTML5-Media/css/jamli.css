@@ -17,6 +17,7 @@
 */
 video {
 	max-width: 100%;
+	background-color:#000;
 }
 
 #videoWrapper {
@@ -35,6 +36,7 @@ video {
 	z-index:4;
 	margin-top:-3px;
 	border:1px solid #AAA;
+	max-height:35px;
 }
 
 .shaded {
@@ -199,6 +201,7 @@ video {
 
 .mediaSeekBarCenter {
 	margin-bottom: 5px;
-	border-left: 1px solid #555753;
-	border-right: 1px solid #555753;
+	border-left: 1px solid #999;
+	border-right: 1px solid #999;
+	background-color:#EEE;
 }

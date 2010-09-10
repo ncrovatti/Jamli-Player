@@ -15,6 +15,9 @@ window.Jamli = window.Jamli || function (selector) {
 		return ua.match(/iPhone/i) || ua.match(/iPad/i);
 	}();
 	
+	/* not functional in Opera */
+	/* not functional in Opera */
+	/* not functional in Opera */
 	self.keyPressHandler = function(e) {
 		e = e || window.event;
 	
@@ -22,15 +25,14 @@ window.Jamli = window.Jamli || function (selector) {
 			case 32:
 				if (self.media.paused === true) {
 					$('.mediaPlaybackStart').trigger('click');
-					return false;
+					break;
 				}
 				
 				$('.mediaPlaybackPause').trigger('click');
-				return false;
 				break;
 			case 43:
-				if(self.media.volume === 1) {
-					return false;
+				if (self.media.volume === 1) {
+					break;
 				}
 				
 				self.media.muted = false;
@@ -41,11 +43,10 @@ window.Jamli = window.Jamli || function (selector) {
 				else {
 					self.media.volume = 1;
 				}
-				return false;
 			break;
 			case 45:
-				if(self.media.volume === 0) {
-					return false;
+				if (self.media.volume === 0) {
+					break;
 				}
 				
 				if (self.media.volume - 0.1 > 0) {
@@ -55,7 +56,6 @@ window.Jamli = window.Jamli || function (selector) {
 					self.media.volume = 0;
 					self.media.muted = true;
 				}
-				return false;
 			break;
 			default:
 			break;
@@ -140,28 +140,50 @@ window.Jamli = window.Jamli || function (selector) {
 	};
 	
 	self.onviewFullscreen = function (control) {
-		var pos = 'fixed';
+		var 
+			position = 'relative', 
+			width = '', 
+			left = 0, 
+			bottom = 0,
+			zIndex = 4;
+		
 		self.isFullScreen = !self.isFullScreen;
-
+		
 		if (self.isFullScreen === true) {
+			
 			self.oldDimension = {
-				h: self.media.videoHeight, 
-				w: self.media.videoWidth
+				h: self.media.height, 
+				w: self.media.width
 			};
 			
+			position = 'fixed';
 			self.media.height = window.innerHeight;
 			self.media.width = window.innerWidth;
+			zIndex = 100;
+			width = 340;
+			left = (window.innerWidth / 2) - (width / 2)   + 'px';
+			width = width  + 'px';
+			bottom = '1em';
 		} 
 		else {
-			pos = 'relative';
 			self.media.height = self.oldDimension.h;
 			self.media.width = self.oldDimension.w;
 		}
 
 		$(self.media).css({
-			'position' : pos, 
-			'top' : 0, 
-			'left' : 0
+			position: position, 
+			top: 0, 
+			left: 0,
+			bottom: bottom,
+			zIndex: zIndex
+		});
+
+		$('#jamli').css({
+			position: position, 
+			zIndex: zIndex + 1,
+			width: width,
+			bottom: bottom,
+			left: left
 		});
 
 	};
